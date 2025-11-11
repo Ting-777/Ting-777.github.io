@@ -1,1 +1,91 @@
-<h1>我牛逼！</h1>
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>为海豚上香！</title>
+		<style>
+			/* 为弹出框添加样式 */
+			.modal {
+				display: none; /* 默认隐藏 */
+				position: fixed; /* 固定位置 */
+				z-index: 100000001; /* 使弹出框位于最前 */
+				left: 0;
+				top: 0;
+				width: 100%;
+				height: 100%;
+				overflow: auto; /* 如果内容超出视窗，显示滚动条 */
+				background-color: rgb(0,0,0); /* 黑色背景 */
+				background-color: rgba(0,0,0,0.4); /* 背景透明度 */
+			}
+			.modal-content {
+				background-color: #fefefe;
+				margin: 0% auto; /* 15% 距离顶部，居中 */
+				padding: 20px;
+				border: 1px solid #888;
+				width: 80%; /* 弹出框宽度 */
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+		<center>
+			<h1>伟大的 <span style="color: red; font-weight: bold; font-size: 2em;">豚师</span> 思想战无不胜永放光芒！</h1>
+			<img border="0" src="img/dolphin.jpg" width="500">
+			<p></p>
+			<img border="0" src="img/sixiang.png" width="500">
+			<p></p>
+			<img border="0" src="img/11.jpg" width="500">
+			<p></p>
+			<input id="btn" type="button" value="上香" style="width: 150px;height: 50px;">
+			<input id="donateBtn" type="button" value="功德箱" style="width: 150px;height: 50px;">
+		</center>
+
+		<!-- 弹出框内容 -->
+		<div id="donateModal" class="modal">
+			<div class="modal-content">
+				<img src="img/money.jpg" width="500">
+			</div>
+		</div>
+
+	</body>
+
+	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+	<script type="text/javascript">
+		var a_idx = 0;
+		$("#btn").click(function(e){
+			var a = new Array("世界是规律的演绎", "转转盘", "伞沪不要吵谷", "小米迟早倒闭");
+			var $i = $("<span/>").text(a[a_idx]);
+			a_idx = (a_idx + 1) % a.length;
+			var x = e.pageX,
+				y = e.pageY;
+			$i.css({
+				"z-index": 100000000,
+				"top": y - 20,
+				"left": x,
+				"position": "absolute",
+				"font-weight": "bold",
+				"color": "#ff6651"
+			});
+			$("body").append($i);
+			$i.animate({
+				"top": y - 180,
+				"opacity": 0
+			}, 1500, function() {
+				$i.remove();
+			});
+		});
+
+		// 功德箱按钮点击事件
+		$("#donateBtn").click(function() {
+			$("#donateModal").css("display", "block");
+		});
+
+		// 点击任意地方关闭弹出框
+		$(window).click(function(event) {
+			if (event.target.id == "donateModal") {
+				$("#donateModal").css("display", "none");
+			}
+		});
+	</script>
+
+</html>
