@@ -22,7 +22,6 @@
       color: #ffffff;
       font-weight: 700;
       text-shadow: 0 0 6px rgba(255, 255, 255, 0.45);
-      transition: font-size 0.3s ease;
     }
 
     h2 {
@@ -39,7 +38,6 @@
       text-shadow: 0 0 8px rgba(255, 80, 80, 0.6);
     }
 
-    /* ===== 图片布局 ===== */
     .image-gallery {
       display: flex;
       justify-content: center;
@@ -64,18 +62,11 @@
     }
 
     @media (max-width: 768px) {
-      .image-gallery {
-        flex-direction: column;
-      }
-      .image-gallery img {
-        max-width: 90%;
-      }
+      .image-gallery { flex-direction: column; }
+      .image-gallery img { max-width: 90%; }
     }
 
-    /* ===== 按钮 ===== */
-    .button-container {
-      margin-top: 25px;
-    }
+    .button-container { margin-top: 25px; }
 
     input[type="button"] {
       background: linear-gradient(90deg, #1CB5E0 0%, #000851 100%);
@@ -96,7 +87,6 @@
       background: linear-gradient(90deg, #009ffd 0%, #2a2a72 100%);
     }
 
-    /* ===== 弹窗 ===== */
     .modal {
       display: none;
       position: fixed;
@@ -136,7 +126,6 @@
       to { opacity: 1; transform: scale(1) translate(-50%, -50%); }
     }
 
-    /* ===== 飘字 ===== */
     .floating-text {
       position: absolute;
       user-select: none;
@@ -152,9 +141,8 @@
       to { transform: translateY(-180px); opacity: 0; }
     }
 
-    /* ===== 烟雾粒子层（允许滚动） ===== */
     #smokeCanvas {
-      position: absolute; /* ✅ 不再固定 */
+      position: absolute;
       top: 0;
       left: 0;
       width: 100%;
@@ -163,7 +151,6 @@
       z-index: 10;
     }
 
-    /* 评论区 & 底部 */
     #gitalk-container {
       margin: 60px auto;
       width: 90%;
@@ -222,7 +209,7 @@
 
   <footer>
     <a href="https://info.flagcounter.com/W9VG">
-      <img src="https://s05.flagcounter.com/count2/W9VG/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_10/viewers_Devotees/labels_0/pageviews_1/flags_0/percent_0/" alt="Flag Counter" border="0">
+      <img src="https://s05.flagcounter.com/count2/W9VG/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_10/viewers_Devotees/labels_0/pageviews_1/flags_0/percent_0/" alt="Flag Counter">
     </a>
     <p>© 2025 豚师祠</p>
   </footer>
@@ -233,7 +220,6 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
 
   <script>
-    // 上香飘字
     let a_idx = 0;
     $("#btn").click(function(e){
       const phrases = ["世界是规律的演绎", "转转盘", "伞沪不要吵谷", "小米迟早倒闭"];
@@ -242,14 +228,12 @@
       $i.css({ left: e.pageX + "px", top: e.pageY - 20 + "px" });
       $("body").append($i);
       setTimeout(() => $i.remove(), 1600);
-      createSmoke();
+      createTripleSmoke();
     });
 
-    // 功德箱弹出
     $("#donateBtn").click(() => $("#donateModal").fadeIn(300));
     $(window).click(e => { if (e.target.id === "donateModal") $("#donateModal").fadeOut(300); });
 
-    // Gitalk 初始化
     const gitalk = new Gitalk({
       id: window.location.pathname,
       clientID: 'Ov23liPL1nlZMAJ7V0h2',
@@ -272,21 +256,27 @@
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    // ✅ 保证烟雾层在滚动时跟随视口
     window.addEventListener('scroll', () => {
       canvas.style.top = window.scrollY + 'px';
     });
 
-    function createSmoke() {
-      for (let i = 0; i < 20; i++) {
-        particles.push({
-          x: w / 2 + (Math.random() - 0.5) * 50,
-          y: h - 50,
-          r: Math.random() * 15 + 5,
-          alpha: 1,
-          vx: (Math.random() - 0.5) * 0.6,
-          vy: -Math.random() * 1.5 - 0.8
-        });
+    function createTripleSmoke() {
+      const sources = [
+        w * 0.25, // 左
+        w * 0.5,  // 中
+        w * 0.75  // 右
+      ];
+      for (const sx of sources) {
+        for (let i = 0; i < 18; i++) {
+          particles.push({
+            x: sx + (Math.random() - 0.5) * 40,
+            y: h - 50,
+            r: Math.random() * 15 + 5,
+            alpha: 1,
+            vx: (Math.random() - 0.5) * 0.6,
+            vy: -Math.random() * 1.5 - 0.8
+          });
+        }
       }
     }
 
