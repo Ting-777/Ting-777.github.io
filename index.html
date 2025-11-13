@@ -172,6 +172,24 @@
         font-size: clamp(0.9em, 4.5vw, 1.3em);
       }
     }
+
+    /* ===== 烟雾粒子样式 ===== */
+    .smoke {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, rgba(200,200,200,0) 70%);
+      border-radius: 50%;
+      opacity: 0.8;
+      pointer-events: none;
+      animation: smokeRise 3s ease-out forwards;
+    }
+
+    @keyframes smokeRise {
+      0% { transform: translateY(0) scale(1); opacity: 0.8; }
+      50% { opacity: 0.5; transform: translateY(-80px) scale(1.5); }
+      100% { transform: translateY(-150px) scale(2); opacity: 0; }
+    }
   </style>
 </head>
 
@@ -214,7 +232,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
 
   <script>
-    // 上香特效
+    // 上香特效 + 烟雾效果
     let a_idx = 0;
     $("#btn").click(function(e){
       const phrases = ["世界是规律的演绎", "转转盘", "伞沪不要吵谷", "小米迟早倒闭"];
@@ -232,6 +250,23 @@
       });
       $("body").append($i);
       $i.animate({"top": y - 180, "opacity": 0}, 1600, function() { $i.remove(); });
+
+      // 🌫️ 生成烟雾粒子
+      for (let i = 0; i < 8; i++) {
+        const $smoke = $('<div class="smoke"></div>');
+        const offsetX = (Math.random() - 0.5) * 60;
+        const offsetY = Math.random() * 20;
+        const size = 8 + Math.random() * 10;
+        $smoke.css({
+          left: x + offsetX,
+          top: y + offsetY,
+          width: size + "px",
+          height: size + "px",
+          animationDuration: 2.5 + Math.random() * 1.5 + "s"
+        });
+        $("body").append($smoke);
+        setTimeout(() => $smoke.remove(), 4000);
+      }
     });
 
     // 功德箱弹出
