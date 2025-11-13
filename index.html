@@ -2,124 +2,103 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>为海豚上香！</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
+    /* ===== 全局样式 ===== */
     body {
       margin: 0;
       font-family: 'Noto Sans SC', sans-serif;
-      background: radial-gradient(circle at top, #0d0d1a 0%, #111827 50%, #1a1a2e 100%);
+      background: linear-gradient(180deg, #0a0a0f 0%, #1a1a2e 40%, #16213e 100%);
       color: #eaeaea;
       text-align: center;
       overflow-x: hidden;
-      position: relative;
-      min-height: 100vh;
     }
 
     h1 {
-      font-size: 2em;
-      margin: 50px 10px 30px;
-      color: #fff;
+      font-size: 2.2em;
+      margin-top: 50px;
+      color: #ffffff;
       font-weight: 700;
-      text-shadow: 0 0 5px rgba(255,255,255,0.25);
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
+      transition: font-size 0.3s ease;
     }
 
     h2 {
-      margin: 50px 10px 20px;
-      font-size: 1.3em;
+      margin-top: 60px;
+      color: #e0e0e0;
       font-weight: 500;
-      color: #f1f1f1;
-      text-shadow: 0 0 3px rgba(255,255,255,0.2);
+      text-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
     }
 
     span.highlight {
-      color: #ff4444;
+      color: #ff4b4b;
       font-weight: 700;
-      font-size: 1.3em;
-      text-shadow:
-        0 0 4px rgba(255,100,100,0.6),
-        0 0 8px rgba(255,80,80,0.3);
+      font-size: 1.5em;
+      text-shadow: 0 0 6px rgba(255, 80, 80, 0.6);
     }
 
-    /* 图片容器 */
+    /* ===== 图片布局 ===== */
     .image-gallery {
       display: flex;
       justify-content: center;
-      align-items: flex-start;
+      align-items: center;
       gap: 20px;
       flex-wrap: wrap;
-      margin: 20px auto;
-      max-width: 1200px;
+      margin-top: 20px;
     }
 
     .image-gallery img {
       width: 100%;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
+      max-width: 400px;
+      height: auto;
       border-radius: 12px;
-      box-shadow: 0 0 20px rgba(255,255,255,0.1);
+      box-shadow: 0 0 15px rgba(255,255,255,0.15);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .image-gallery img:hover {
       transform: scale(1.03);
-      box-shadow: 0 0 25px rgba(255,255,255,0.25);
+      box-shadow: 0 0 20px rgba(255,255,255,0.3);
     }
 
-    /* PC端三张图并排 */
-    @media (min-width: 769px) {
-      .image-gallery {
-        flex-wrap: nowrap;
-      }
-      .image-gallery img {
-        width: 30%;
-        max-width: 350px;
-      }
-    }
-
-    /* 手机端一列 */
+    /* PC端三张图同一行，手机端一列 */
     @media (max-width: 768px) {
       .image-gallery {
         flex-direction: column;
-        gap: 15px;
       }
       .image-gallery img {
-        width: 90%;
-        margin: 0 auto;
+        max-width: 90%;
       }
     }
 
-    /* 按钮 */
+    /* ===== 按钮样式 ===== */
     .button-container {
-      margin-top: 20px;
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 15px;
+      margin-top: 25px;
     }
 
     input[type="button"] {
-      background: linear-gradient(90deg, #007cf0 0%, #00dfd8 100%);
+      background: linear-gradient(90deg, #1CB5E0 0%, #000851 100%);
       border: none;
       border-radius: 8px;
-      padding: 12px 30px;
-      font-size: 1em;
+      padding: 12px 35px;
+      margin: 10px;
+      font-size: 1.1em;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.25s ease;
       color: #fff;
-      box-shadow: 0 0 10px rgba(0,0,0,0.25);
-      text-shadow: 0 0 3px rgba(255,255,255,0.4);
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
 
     input[type="button"]:hover {
       transform: translateY(-2px);
-      background: linear-gradient(90deg, #00dfd8 0%, #007cf0 100%);
-      box-shadow: 0 0 20px rgba(0,200,255,0.4);
+      background: linear-gradient(90deg, #009ffd 0%, #2a2a72 100%);
     }
 
-    /* 弹窗 */
+    /* ===== 弹窗样式 ===== */
     .modal {
       display: none;
       position: fixed;
@@ -135,56 +114,64 @@
     .modal-content {
       background: #f8f9fa;
       border-radius: 12px;
-      margin: 20% auto;
       padding: 15px;
       width: 90%;
       max-width: 400px;
+      max-height: 80vh;
+      overflow: hidden;
       box-shadow: 0 0 25px rgba(0,0,0,0.4);
       animation: fadeIn 0.4s ease-out;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .modal-content img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
+      from { opacity: 0; transform: scale(0.95) translate(-50%, -50%); }
+      to { opacity: 1; transform: scale(1) translate(-50%, -50%); }
     }
 
+    /* ===== 评论区 ===== */
     #gitalk-container {
-      margin: 40px auto;
+      margin: 60px auto;
       width: 90%;
-      max-width: 700px;
-      background: rgba(255,255,255,0.05);
+      max-width: 800px;
+      background: rgba(255, 255, 255, 0.05);
       border-radius: 10px;
       padding: 20px;
       box-shadow: 0 0 10px rgba(255,255,255,0.1);
     }
 
+    /* ===== 底部 ===== */
     footer {
-      margin: 40px 0 30px;
-      font-size: 0.85em;
+      margin: 50px 0 30px;
+      font-size: 0.9em;
       color: #aaa;
     }
 
-    /* 烟雾粒子 */
-    .smoke {
-      position: fixed;
-      bottom: 60px;
-      left: 50%;
-      width: 6px;
-      height: 6px;
-      background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 70%);
-      border-radius: 50%;
-      pointer-events: none;
-      opacity: 0.5;
-      animation: rise 5s linear forwards;
-      z-index: 0;
+    /* ===== 自适应标题防止换行 ===== */
+    h1, h2 {
+      word-break: keep-all;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    @keyframes rise {
-      0% { transform: translateX(0) translateY(0) scale(1); opacity: 0.4; }
-      50% { transform: translateX(-15px) translateY(-150px) scale(1.4); opacity: 0.6; }
-      100% { transform: translateX(15px) translateY(-300px) scale(2); opacity: 0; }
+    @media (max-width: 768px) {
+      h1 {
+        font-size: clamp(1.1em, 5vw, 1.5em);
+      }
+      h2 {
+        font-size: clamp(0.9em, 4.5vw, 1.3em);
+      }
     }
-
   </style>
 </head>
 
@@ -192,9 +179,9 @@
   <h1>伟大的 <span class="highlight">豚师</span> 思想战无不胜，永放光芒！</h1>
 
   <div class="image-gallery">
-    <img src="img/dolphin.jpg" alt="海豚像">
+    <img src="img/dolphin.jpg" alt="左海豚像">
     <img src="img/sixiang.png" alt="思想光辉">
-    <img src="img/dolphin1.jpg" alt="纪念图">
+    <img src="img/dolphin1.jpg" alt="右海豚像">
   </div>
 
   <div class="button-container">
@@ -202,14 +189,16 @@
     <input id="donateBtn" type="button" value="功德箱">
   </div>
 
+  <!-- 功德箱弹出框 -->
   <div id="donateModal" class="modal">
     <div class="modal-content">
-      <img src="img/money.jpg" alt="功德图" style="width: 100%; border-radius: 8px;">
+      <img src="img/money.jpg" alt="功德图">
     </div>
   </div>
 
   <h2>让我们为伟大的 <span class="highlight">豚师</span> 写下赞美的诗篇！</h2>
 
+  <!-- Gitalk 评论系统 -->
   <div id="gitalk-container"></div>
 
   <footer>
@@ -219,6 +208,7 @@
     <p>© 2025 豚师祠</p>
   </footer>
 
+  <!-- JS -->
   <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
@@ -237,24 +227,22 @@
         "left": x,
         "position": "absolute",
         "font-weight": "600",
-        "color": "#ff5555",
-        "text-shadow": "0 0 4px rgba(255,120,120,0.8)",
+        "color": "#ff4b4b",
         "font-size": "16px"
       });
       $("body").append($i);
       $i.animate({"top": y - 180, "opacity": 0}, 1600, function() { $i.remove(); });
-
-      // 同时生成几缕烟
-      for(let i=0;i<3;i++) createSmoke();
     });
 
     // 功德箱弹出
     $("#donateBtn").click(() => $("#donateModal").fadeIn(300));
+
+    // 点击关闭弹窗
     $(window).click(event => {
       if (event.target.id === "donateModal") $("#donateModal").fadeOut(300);
     });
 
-    // Gitalk 评论
+    // Gitalk 初始化
     const gitalk = new Gitalk({
       id: window.location.pathname,
       clientID: 'Ov23liPL1nlZMAJ7V0h2',
@@ -265,17 +253,6 @@
       distractionFreeMode: false
     });
     gitalk.render('gitalk-container');
-
-    // 烟雾效果
-    function createSmoke() {
-      const smoke = document.createElement('div');
-      smoke.className = 'smoke';
-      const offset = (Math.random() - 0.5) * 80;
-      smoke.style.left = `calc(50% + ${offset}px)`;
-      document.body.appendChild(smoke);
-      setTimeout(() => smoke.remove(), 5000);
-    }
-    setInterval(() => createSmoke(), 1800);
   </script>
 </body>
 </html>
