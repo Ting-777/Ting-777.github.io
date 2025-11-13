@@ -1,113 +1,255 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<title>为海豚上香！</title>
-		<style>
-			/* 为弹出框添加样式 */
-			.modal {
-				display: none; /* 默认隐藏 */
-				position: fixed; /* 固定位置 */
-				z-index: 100000001; /* 使弹出框位于最前 */
-				left: 0;
-				top: 0;
-				width: 100%;
-				height: 100%;
-				overflow: auto; /* 如果内容超出视窗，显示滚动条 */
-				background-color: rgb(0,0,0); /* 黑色背景 */
-				background-color: rgba(0,0,0,0.4); /* 背景透明度 */
-			}
-			.modal-content {
-				background-color: #fefefe;
-				margin: 0% auto; /* 15% 距离顶部，居中 */
-				padding: 20px;
-				border: 1px solid #888;
-				width: 80%; /* 弹出框宽度 */
-				text-align: center;
-			}
-		</style>
-	</head>
-	<body>
-		<center>
-			<h1>伟大的 <span style="color: red; font-weight: bold; font-size: 2em;">豚师</span> 思想战无不胜永放光芒！</h1>
-			<img border="0" src="img/dolphin.jpg" width="500">
-			<p></p>
-			<img border="0" src="img/sixiang.png" width="500">
-			<p></p>
-			<img border="0" src="img/11.jpg" width="500">
-			<p></p>
-			<input id="btn" type="button" value="上香" style="width: 150px;height: 50px;">
-			<input id="donateBtn" type="button" value="功德箱" style="width: 150px;height: 50px;">
-		</center>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>为海豚上香！</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* 全局样式 */
+    body {
+      margin: 0;
+      font-family: 'Noto Sans SC', sans-serif;
+      background: radial-gradient(circle at top, #0d0d1a 0%, #111827 50%, #1a1a2e 100%);
+      color: #eaeaea;
+      text-align: center;
+      overflow-x: hidden;
+      position: relative;
+      height: 100vh;
+      overflow-y: auto;
+    }
 
-		<!-- 弹出框内容 -->
-		<div id="donateModal" class="modal">
-			<div class="modal-content">
-				<img src="img/money.jpg" width="500">
-			</div>
-		</div>
+    h1 {
+      font-size: 2.4em;
+      margin-top: 60px;
+      color: #ffffff;
+      font-weight: 700;
+      text-shadow: 0 0 5px rgba(255,255,255,0.3);
+    }
 
-	</body>
+    h2 {
+      margin-top: 70px;
+      color: #f1f1f1;
+      font-weight: 500;
+      text-shadow: 0 0 3px rgba(255,255,255,0.2);
+    }
 
-	<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
-	<script type="text/javascript">
-		var a_idx = 0;
-		$("#btn").click(function(e){
-			var a = new Array("世界是规律的演绎", "转转盘", "伞沪不要吵谷", "小米迟早倒闭");
-			var $i = $("<span/>").text(a[a_idx]);
-			a_idx = (a_idx + 1) % a.length;
-			var x = e.pageX,
-				y = e.pageY;
-			$i.css({
-				"z-index": 100000000,
-				"top": y - 20,
-				"left": x,
-				"position": "absolute",
-				"font-weight": "bold",
-				"color": "#ff6651"
-			});
-			$("body").append($i);
-			$i.animate({
-				"top": y - 180,
-				"opacity": 0
-			}, 1500, function() {
-				$i.remove();
-			});
-		});
+    span.highlight {
+      color: #ff4444;
+      font-weight: 700;
+      font-size: 1.6em;
+      text-shadow:
+        0 0 4px rgba(255,100,100,0.6),
+        0 0 8px rgba(255,80,80,0.3);
+    }
 
-		// 功德箱按钮点击事件
-		$("#donateBtn").click(function() {
-			$("#donateModal").css("display", "block");
-		});
+    img {
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(255,255,255,0.1);
+      margin: 18px 0;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
 
-		// 点击任意地方关闭弹出框
-		$(window).click(function(event) {
-			if (event.target.id == "donateModal") {
-				$("#donateModal").css("display", "none");
-			}
-		});
-	</script>
-		<center>
-			<h2>让我们为伟大的 <span style="color: red; font-weight: bold; font-size: 1.5em;">豚师</span> 写下赞美的诗篇！</h2>
-		</center>
-<!--gitalk js code start-->
-<div id="gitalk-container"></div>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
-<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
-<script type="text/javascript">
-      var gitalk = new Gitalk({
-        id: window.location.pathname,
-        clientID: 'Ov23liPL1nlZMAJ7V0h2',
-        clientSecret: '0b7263dc0471344da2d5bc70fefaad21743861dd',
-        repo: 'Ting-777.github.io',
-        owner: 'Ting-777',
-        admin: ['Ting-777'],
-        distractionFreeMode: false
+    img:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 25px rgba(255,255,255,0.25);
+    }
+
+    .button-container {
+      margin-top: 25px;
+    }
+
+    input[type="button"] {
+      background: linear-gradient(90deg, #007cf0 0%, #00dfd8 100%);
+      border: none;
+      border-radius: 8px;
+      padding: 12px 40px;
+      margin: 10px;
+      font-size: 1.1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.25);
+      text-shadow: 0 0 3px rgba(255,255,255,0.4);
+    }
+
+    input[type="button"]:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(90deg, #00dfd8 0%, #007cf0 100%);
+      box-shadow: 0 0 20px rgba(0,200,255,0.4);
+    }
+
+    /* 弹窗样式 */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100000001;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
+    }
+
+    .modal-content {
+      background: #f8f9fa;
+      border-radius: 12px;
+      margin: 10% auto;
+      padding: 20px;
+      width: 60%;
+      max-width: 600px;
+      box-shadow: 0 0 25px rgba(0,0,0,0.4);
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* 评论区 */
+    #gitalk-container {
+      margin: 60px auto;
+      width: 90%;
+      max-width: 800px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+    }
+
+    footer {
+      margin: 50px 0 30px;
+      font-size: 0.9em;
+      color: #aaa;
+    }
+
+    /* 香烟粒子 */
+    .smoke {
+      position: fixed;
+      bottom: 50px;
+      left: 50%;
+      width: 6px;
+      height: 6px;
+      background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0.5;
+      animation: rise 5s linear forwards;
+    }
+
+    @keyframes rise {
+      0% {
+        transform: translateX(0) translateY(0) scale(1);
+        opacity: 0.4;
+      }
+      50% {
+        transform: translateX(-20px) translateY(-150px) scale(1.4);
+        opacity: 0.6;
+      }
+      100% {
+        transform: translateX(20px) translateY(-300px) scale(2);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>伟大的 <span class="highlight">豚师</span> 思想战无不胜，永放光芒！</h1>
+
+  <img src="img/dolphin.jpg" width="500" alt="海豚像">
+  <img src="img/sixiang.png" width="500" alt="思想光辉">
+  <img src="img/11.jpg" width="500" alt="香图">
+
+  <div class="button-container">
+    <input id="btn" type="button" value="上香">
+    <input id="donateBtn" type="button" value="功德箱">
+  </div>
+
+  <div id="donateModal" class="modal">
+    <div class="modal-content">
+      <img src="img/money.jpg" width="100%" alt="功德图">
+    </div>
+  </div>
+
+  <h2>让我们为伟大的 <span class="highlight">豚师</span> 写下赞美的诗篇！</h2>
+
+  <div id="gitalk-container"></div>
+
+  <footer>
+    <a href="https://info.flagcounter.com/W9VG">
+      <img src="https://s05.flagcounter.com/count2/W9VG/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_10/viewers_Devotees/labels_0/pageviews_1/flags_0/percent_0/" alt="Flag Counter" border="0">
+    </a>
+    <p>© 2025 豚師祠</p>
+  </footer>
+
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+
+  <script>
+    // 上香特效
+    let a_idx = 0;
+    $("#btn").click(function(e){
+      const phrases = ["世界是规律的演绎", "转转盘", "伞沪不要吵谷", "小米迟早倒闭"];
+      const $i = $("<span/>").text(phrases[a_idx]);
+      a_idx = (a_idx + 1) % phrases.length;
+      const x = e.pageX, y = e.pageY;
+      $i.css({
+        "z-index": 100000000,
+        "top": y - 20,
+        "left": x,
+        "position": "absolute",
+        "font-weight": "600",
+        "color": "#ff5555",
+        "text-shadow": "0 0 4px rgba(255,120,120,0.8)",
+        "font-size": "16px"
       });
-      gitalk.render('gitalk-container');
-</script>
-<!--gitalk js code end-->
-	<center>
-<a href="https://info.flagcounter.com/W9VG"><img src="https://s05.flagcounter.com/count2/W9VG/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_10/viewers_Devotees/labels_0/pageviews_1/flags_0/percent_0/" alt="Flag Counter" border="0"></a>
-</center>
+      $("body").append($i);
+      $i.animate({"top": y - 180, "opacity": 0}, 1600, function() { $i.remove(); });
+
+      // 同时生成几缕烟
+      for(let i=0;i<3;i++) createSmoke();
+    });
+
+    // 功德箱弹出
+    $("#donateBtn").click(() => $("#donateModal").fadeIn(300));
+
+    // 点击关闭弹窗
+    $(window).click(event => {
+      if (event.target.id === "donateModal") $("#donateModal").fadeOut(300);
+    });
+
+    // Gitalk 初始化
+    const gitalk = new Gitalk({
+      id: window.location.pathname,
+      clientID: 'Ov23liPL1nlZMAJ7V0h2',
+      clientSecret: '0b7263dc0471344da2d5bc70fefaad21743861dd',
+      repo: 'Ting-777.github.io',
+      owner: 'Ting-777',
+      admin: ['Ting-777'],
+      distractionFreeMode: false
+    });
+    gitalk.render('gitalk-container');
+
+    // =====================
+    // 🌫️ 烟雾生成逻辑
+    // =====================
+    function createSmoke() {
+      const smoke = document.createElement('div');
+      smoke.className = 'smoke';
+      // 随机轻微偏移位置
+      const offset = (Math.random() - 0.5) * 80;
+      smoke.style.left = `calc(50% + ${offset}px)`;
+      document.body.appendChild(smoke);
+      setTimeout(() => smoke.remove(), 5000);
+    }
+
+    // 页面持续随机冒烟
+    setInterval(() => createSmoke(), 1500);
+  </script>
+</body>
 </html>
