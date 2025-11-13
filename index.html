@@ -7,14 +7,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
-    /* ===== 全局样式 ===== */
     body {
       margin: 0;
       font-family: 'Noto Sans SC', sans-serif;
       background: linear-gradient(180deg, #0a0a0f 0%, #1a1a2e 40%, #16213e 100%);
       color: #eaeaea;
       text-align: center;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
     h1 {
@@ -38,24 +37,6 @@
       font-weight: 700;
       font-size: 1.5em;
       text-shadow: 0 0 8px rgba(255, 80, 80, 0.6);
-    }
-
-    /* ===== 烟雾背景效果 ===== */
-    .smoke {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.03) 0%, transparent 60%),
-                  radial-gradient(circle at 80% 80%, rgba(255,255,255,0.04) 0%, transparent 70%);
-      animation: smokeMove 25s infinite alternate ease-in-out;
-      z-index: -1;
-    }
-
-    @keyframes smokeMove {
-      0% { transform: translate(0,0) scale(1); opacity: 0.8; }
-      100% { transform: translate(20px, -30px) scale(1.2); opacity: 1; }
     }
 
     /* ===== 图片布局 ===== */
@@ -82,7 +63,6 @@
       box-shadow: 0 0 20px rgba(255,255,255,0.3);
     }
 
-    /* PC端三张图同一行，手机端一列 */
     @media (max-width: 768px) {
       .image-gallery {
         flex-direction: column;
@@ -92,7 +72,7 @@
       }
     }
 
-    /* ===== 按钮样式 ===== */
+    /* ===== 按钮 ===== */
     .button-container {
       margin-top: 25px;
     }
@@ -116,7 +96,7 @@
       background: linear-gradient(90deg, #009ffd 0%, #2a2a72 100%);
     }
 
-    /* ===== 弹窗样式 ===== */
+    /* ===== 弹窗 ===== */
     .modal {
       display: none;
       position: fixed;
@@ -156,13 +136,10 @@
       to { opacity: 1; transform: scale(1) translate(-50%, -50%); }
     }
 
-    /* ===== 飘字效果样式 ===== */
+    /* ===== 飘字 ===== */
     .floating-text {
       position: absolute;
       user-select: none;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
       pointer-events: none;
       font-weight: 600;
       color: #ff6b6b;
@@ -171,18 +148,22 @@
     }
 
     @keyframes floatUp {
-      from {
-        transform: translateY(0);
-        opacity: 1;
-      }
-      to {
-        transform: translateY(-180px);
-        opacity: 0;
-        text-shadow: 0 0 12px rgba(255, 100, 100, 0.3);
-      }
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(-180px); opacity: 0; }
     }
 
-    /* ===== 评论区 ===== */
+    /* ===== 烟雾粒子层 ===== */
+    #smokeCanvas {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* 评论区 & 底部 */
     #gitalk-container {
       margin: 60px auto;
       width: 90%;
@@ -193,14 +174,12 @@
       box-shadow: 0 0 10px rgba(255,255,255,0.1);
     }
 
-    /* ===== 底部 ===== */
     footer {
       margin: 50px 0 30px;
       font-size: 0.9em;
       color: #aaa;
     }
 
-    /* ===== 自适应标题防止换行 ===== */
     h1, h2 {
       word-break: keep-all;
       white-space: nowrap;
@@ -209,19 +188,14 @@
     }
 
     @media (max-width: 768px) {
-      h1 {
-        font-size: clamp(1.1em, 5vw, 1.5em);
-      }
-      h2 {
-        font-size: clamp(0.9em, 4.5vw, 1.3em);
-      }
+      h1 { font-size: clamp(1.1em, 5vw, 1.5em); }
+      h2 { font-size: clamp(0.9em, 4.5vw, 1.3em); }
     }
   </style>
 </head>
 
 <body>
-  <!-- 烟雾层 -->
-  <div class="smoke"></div>
+  <canvas id="smokeCanvas"></canvas>
 
   <h1>伟大的 <span class="highlight">豚师</span> 思想战无不胜，永放光芒！</h1>
 
@@ -236,7 +210,6 @@
     <input id="donateBtn" type="button" value="功德箱">
   </div>
 
-  <!-- 功德箱弹出框 -->
   <div id="donateModal" class="modal">
     <div class="modal-content">
       <img src="img/money.jpg" alt="功德图">
@@ -245,7 +218,6 @@
 
   <h2>让我们为伟大的 <span class="highlight">豚师</span> 写下赞美的诗篇！</h2>
 
-  <!-- Gitalk 评论系统 -->
   <div id="gitalk-container"></div>
 
   <footer>
@@ -261,27 +233,22 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
 
   <script>
-    // 上香特效
+    // 上香飘字
     let a_idx = 0;
     $("#btn").click(function(e){
       const phrases = ["世界是规律的演绎", "转转盘", "伞沪不要吵谷", "小米迟早倒闭"];
       const $i = $("<span class='floating-text'/>").text(phrases[a_idx]);
       a_idx = (a_idx + 1) % phrases.length;
-      $i.css({
-        left: e.pageX + "px",
-        top: e.pageY - 20 + "px",
-      });
+      $i.css({ left: e.pageX + "px", top: e.pageY - 20 + "px" });
       $("body").append($i);
       setTimeout(() => $i.remove(), 1600);
+      // 生成烟雾粒子
+      createSmoke();
     });
 
     // 功德箱弹出
     $("#donateBtn").click(() => $("#donateModal").fadeIn(300));
-
-    // 点击关闭弹窗
-    $(window).click(event => {
-      if (event.target.id === "donateModal") $("#donateModal").fadeOut(300);
-    });
+    $(window).click(e => { if (e.target.id === "donateModal") $("#donateModal").fadeOut(300); });
 
     // Gitalk 初始化
     const gitalk = new Gitalk({
@@ -290,10 +257,56 @@
       clientSecret: '0b7263dc0471344da2d5bc70fefaad21743861dd',
       repo: 'Ting-777.github.io',
       owner: 'Ting-777',
-      admin: ['Ting-777'],
-      distractionFreeMode: false
+      admin: ['Ting-777']
     });
     gitalk.render('gitalk-container');
+
+    /* ===== 烟雾粒子系统 ===== */
+    const canvas = document.getElementById("smokeCanvas");
+    const ctx = canvas.getContext("2d");
+    let particles = [];
+    let w, h;
+    function resizeCanvas() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    function createSmoke() {
+      for (let i = 0; i < 20; i++) {
+        particles.push({
+          x: w / 2 + (Math.random() - 0.5) * 50,
+          y: h - 50,
+          r: Math.random() * 15 + 5,
+          alpha: 1,
+          vx: (Math.random() - 0.5) * 0.6,
+          vy: -Math.random() * 1.5 - 0.8
+        });
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        ctx.beginPath();
+        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+        grad.addColorStop(0, `rgba(255,255,255,${p.alpha})`);
+        grad.addColorStop(1, `rgba(180,180,180,0)`);
+        ctx.fillStyle = grad;
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= 0.008;
+        p.r += 0.1;
+        if (p.alpha <= 0) particles.splice(i, 1);
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
   </script>
 </body>
 </html>
