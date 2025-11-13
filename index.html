@@ -2,11 +2,10 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>为海豚上香！</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* 全局样式 */
     body {
       margin: 0;
       font-family: 'Noto Sans SC', sans-serif;
@@ -15,57 +14,62 @@
       text-align: center;
       overflow-x: hidden;
       position: relative;
-      height: 100vh;
-      overflow-y: auto;
+      min-height: 100vh;
     }
 
     h1 {
-      font-size: 2.4em;
-      margin-top: 60px;
-      color: #ffffff;
+      font-size: 2em;
+      margin: 50px 10px 30px;
+      color: #fff;
       font-weight: 700;
-      text-shadow: 0 0 5px rgba(255,255,255,0.3);
+      text-shadow: 0 0 5px rgba(255,255,255,0.25);
     }
 
     h2 {
-      margin-top: 70px;
-      color: #f1f1f1;
+      margin: 50px 10px 20px;
+      font-size: 1.3em;
       font-weight: 500;
+      color: #f1f1f1;
       text-shadow: 0 0 3px rgba(255,255,255,0.2);
     }
 
     span.highlight {
       color: #ff4444;
       font-weight: 700;
-      font-size: 1.6em;
+      font-size: 1.3em;
       text-shadow:
         0 0 4px rgba(255,100,100,0.6),
         0 0 8px rgba(255,80,80,0.3);
     }
 
     img {
+      max-width: 90%;
+      height: auto;
       border-radius: 12px;
       box-shadow: 0 0 20px rgba(255,255,255,0.1);
-      margin: 18px 0;
+      margin: 15px 0;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     img:hover {
-      transform: scale(1.03);
+      transform: scale(1.02);
       box-shadow: 0 0 25px rgba(255,255,255,0.25);
     }
 
     .button-container {
-      margin-top: 25px;
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
     }
 
     input[type="button"] {
       background: linear-gradient(90deg, #007cf0 0%, #00dfd8 100%);
       border: none;
       border-radius: 8px;
-      padding: 12px 40px;
-      margin: 10px;
-      font-size: 1.1em;
+      padding: 12px 30px;
+      font-size: 1em;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.25s ease;
@@ -80,7 +84,7 @@
       box-shadow: 0 0 20px rgba(0,200,255,0.4);
     }
 
-    /* 弹窗样式 */
+    /* 弹窗 */
     .modal {
       display: none;
       position: fixed;
@@ -96,10 +100,10 @@
     .modal-content {
       background: #f8f9fa;
       border-radius: 12px;
-      margin: 10% auto;
-      padding: 20px;
-      width: 60%;
-      max-width: 600px;
+      margin: 20% auto;
+      padding: 15px;
+      width: 90%;
+      max-width: 400px;
       box-shadow: 0 0 25px rgba(0,0,0,0.4);
       animation: fadeIn 0.4s ease-out;
     }
@@ -109,11 +113,10 @@
       to { opacity: 1; transform: scale(1); }
     }
 
-    /* 评论区 */
     #gitalk-container {
-      margin: 60px auto;
+      margin: 40px auto;
       width: 90%;
-      max-width: 800px;
+      max-width: 700px;
       background: rgba(255,255,255,0.05);
       border-radius: 10px;
       padding: 20px;
@@ -121,15 +124,15 @@
     }
 
     footer {
-      margin: 50px 0 30px;
-      font-size: 0.9em;
+      margin: 40px 0 30px;
+      font-size: 0.85em;
       color: #aaa;
     }
 
-    /* 香烟粒子 */
+    /* 烟雾粒子 */
     .smoke {
       position: fixed;
-      bottom: 50px;
+      bottom: 60px;
       left: 50%;
       width: 6px;
       height: 6px;
@@ -138,31 +141,31 @@
       pointer-events: none;
       opacity: 0.5;
       animation: rise 5s linear forwards;
+      z-index: 0;
     }
 
     @keyframes rise {
-      0% {
-        transform: translateX(0) translateY(0) scale(1);
-        opacity: 0.4;
-      }
-      50% {
-        transform: translateX(-20px) translateY(-150px) scale(1.4);
-        opacity: 0.6;
-      }
-      100% {
-        transform: translateX(20px) translateY(-300px) scale(2);
-        opacity: 0;
-      }
+      0% { transform: translateX(0) translateY(0) scale(1); opacity: 0.4; }
+      50% { transform: translateX(-15px) translateY(-150px) scale(1.4); opacity: 0.6; }
+      100% { transform: translateX(15px) translateY(-300px) scale(2); opacity: 0; }
     }
+
+    /* 移动端优化 */
+    @media (max-width: 768px) {
+      h1 { font-size: 1.6em; margin-top: 40px; }
+      h2 { font-size: 1.1em; }
+      input[type="button"] { width: 80%; max-width: 300px; }
+    }
+
   </style>
 </head>
 
 <body>
   <h1>伟大的 <span class="highlight">豚师</span> 思想战无不胜，永放光芒！</h1>
 
-  <img src="img/dolphin.jpg" width="500" alt="海豚像">
-  <img src="img/sixiang.png" width="500" alt="思想光辉">
-  <img src="img/dolphin1.jpg" width="500" alt="香图">
+  <img src="img/dolphin.jpg" alt="海豚像">
+  <img src="img/sixiang.png" alt="思想光辉">
+  <img src="img/dolphin1.jpg" alt="纪念图">
 
   <div class="button-container">
     <input id="btn" type="button" value="上香">
@@ -171,7 +174,7 @@
 
   <div id="donateModal" class="modal">
     <div class="modal-content">
-      <img src="img/money.jpg" width="100%" alt="功德图">
+      <img src="img/money.jpg" alt="功德图" style="width: 100%; border-radius: 8px;">
     </div>
   </div>
 
@@ -183,7 +186,7 @@
     <a href="https://info.flagcounter.com/W9VG">
       <img src="https://s05.flagcounter.com/count2/W9VG/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_10/viewers_Devotees/labels_0/pageviews_1/flags_0/percent_0/" alt="Flag Counter" border="0">
     </a>
-    <p>© 2025 豚師祠</p>
+    <p>© 2025 豚师祠</p>
   </footer>
 
   <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
@@ -217,13 +220,11 @@
 
     // 功德箱弹出
     $("#donateBtn").click(() => $("#donateModal").fadeIn(300));
-
-    // 点击关闭弹窗
     $(window).click(event => {
       if (event.target.id === "donateModal") $("#donateModal").fadeOut(300);
     });
 
-    // Gitalk 初始化
+    // Gitalk 评论
     const gitalk = new Gitalk({
       id: window.location.pathname,
       clientID: 'Ov23liPL1nlZMAJ7V0h2',
@@ -235,21 +236,16 @@
     });
     gitalk.render('gitalk-container');
 
-    // =====================
-    // 🌫️ 烟雾生成逻辑
-    // =====================
+    // 烟雾效果
     function createSmoke() {
       const smoke = document.createElement('div');
       smoke.className = 'smoke';
-      // 随机轻微偏移位置
       const offset = (Math.random() - 0.5) * 80;
       smoke.style.left = `calc(50% + ${offset}px)`;
       document.body.appendChild(smoke);
       setTimeout(() => smoke.remove(), 5000);
     }
-
-    // 页面持续随机冒烟
-    setInterval(() => createSmoke(), 1500);
+    setInterval(() => createSmoke(), 1800);
   </script>
 </body>
 </html>
