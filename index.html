@@ -42,20 +42,55 @@
         0 0 8px rgba(255,80,80,0.3);
     }
 
-    img {
-      max-width: 90%;
-      height: auto;
+    /* 图片容器 */
+    .image-gallery {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin: 20px auto;
+      max-width: 1200px;
+    }
+
+    .image-gallery img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
       border-radius: 12px;
       box-shadow: 0 0 20px rgba(255,255,255,0.1);
-      margin: 15px 0;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    img:hover {
-      transform: scale(1.02);
+    .image-gallery img:hover {
+      transform: scale(1.03);
       box-shadow: 0 0 25px rgba(255,255,255,0.25);
     }
 
+    /* PC端三张图并排 */
+    @media (min-width: 769px) {
+      .image-gallery {
+        flex-wrap: nowrap;
+      }
+      .image-gallery img {
+        width: 30%;
+        max-width: 350px;
+      }
+    }
+
+    /* 手机端一列 */
+    @media (max-width: 768px) {
+      .image-gallery {
+        flex-direction: column;
+        gap: 15px;
+      }
+      .image-gallery img {
+        width: 90%;
+        margin: 0 auto;
+      }
+    }
+
+    /* 按钮 */
     .button-container {
       margin-top: 20px;
       display: flex;
@@ -150,22 +185,17 @@
       100% { transform: translateX(15px) translateY(-300px) scale(2); opacity: 0; }
     }
 
-    /* 移动端优化 */
-    @media (max-width: 768px) {
-      h1 { font-size: 1.6em; margin-top: 40px; }
-      h2 { font-size: 1.1em; }
-      input[type="button"] { width: 80%; max-width: 300px; }
-    }
-
   </style>
 </head>
 
 <body>
   <h1>伟大的 <span class="highlight">豚师</span> 思想战无不胜，永放光芒！</h1>
 
-  <img src="img/dolphin.jpg" alt="海豚像">
-  <img src="img/sixiang.png" alt="思想光辉">
-  <img src="img/dolphin1.jpg" alt="纪念图">
+  <div class="image-gallery">
+    <img src="img/dolphin.jpg" alt="海豚像">
+    <img src="img/sixiang.png" alt="思想光辉">
+    <img src="img/dolphin1.jpg" alt="纪念图">
+  </div>
 
   <div class="button-container">
     <input id="btn" type="button" value="上香">
