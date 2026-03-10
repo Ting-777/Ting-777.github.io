@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
@@ -152,6 +152,11 @@ button:disabled {
 .status-panel p {
   margin: 6px 0;
   color: var(--muted);
+}
+
+.status-panel button {
+  width: 100%;
+  margin: 6px 0 8px;
 }
 
 .status-panel ul {
@@ -323,7 +328,6 @@ button:disabled {
     height: 46px;
   }
 }
-
     </style>
   </head>
   <body>
@@ -343,7 +347,7 @@ button:disabled {
           <button data-mode="standard" type="button">普通</button>
           <button data-mode="hard" type="button">困难</button>
         </div>
-        <p class="hint">移动：方向键 / WASD | 交互：Enter / Space | 战斗：1-8</p>
+        <p class="hint">移动：方向键 / WASD | 交互：Enter / Space | 卖谷票：G | 战斗：1-8</p>
       </section>
 
       <section id="game-screen" class="hidden">
@@ -358,6 +362,7 @@ button:disabled {
             <p id="hero-stats">HP：</p>
             <p id="bag-stats">背包：</p>
             <p id="money-stats">豚币：</p>
+            <button id="sell-gupiao-btn" type="button">卖谷票</button>
             <p id="quest-stats">主线：</p>
             <p id="time-stats">时长：</p>
             <h3>探索说明</h3>
@@ -701,7 +706,7 @@ const SHOPS = {
       { id: "vd", name: "恰vd咯", price: 28, bagKey: "vd", amount: 1 },
       { id: "tonic", name: "转盘酊", price: 26, bagKey: "tonic", amount: 1 },
       { id: "gupiao", name: "谷票", price: 50, bagKey: null, amount: 1 },
-      { id: "suzhou-garden", name: "苏州园林", price: 1000, bagKey: null, amount: 1 },
+      { id: "suzhou-garden", name: "苏州园林", price: 10000, bagKey: null, amount: 1 },
     ],
   },
 };
@@ -953,21 +958,21 @@ const MODES = {
     name: "速通档",
     estimate: "10-15 分钟",
     enemyScale: 0.88,
-    bag: { vc: 2, vd: 2, tonic: 1 },
+    bag: { vc: 2, vd: 2, tonic: 1, gupiao: 0 },
   },
   standard: {
     key: "standard",
     name: "标准档",
     estimate: "15-22 分钟",
     enemyScale: 1,
-    bag: { vc: 2, vd: 2, tonic: 1 },
+    bag: { vc: 2, vd: 2, tonic: 1, gupiao: 0 },
   },
   hard: {
     key: "hard",
     name: "硬核档",
     estimate: "20-30 分钟",
     enemyScale: 1.18,
-    bag: { vc: 1, vd: 2, tonic: 0 },
+    bag: { vc: 1, vd: 2, tonic: 0, gupiao: 0 },
   },
 };
 
@@ -1175,6 +1180,7 @@ const refs = {
   heroStats: document.getElementById("hero-stats"),
   bagStats: document.getElementById("bag-stats"),
   moneyStats: document.getElementById("money-stats"),
+  sellGupiaoBtn: document.getElementById("sell-gupiao-btn"),
   questStats: document.getElementById("quest-stats"),
   timeStats: document.getElementById("time-stats"),
   questLog: document.getElementById("quest-log"),
@@ -1218,8 +1224,9 @@ const game = {
     exp: 0,
     nextExp: 30,
   },
-  bag: { vc: 2, vd: 2, tonic: 0 },
+  bag: { vc: 2, vd: 2, tonic: 0, gupiao: 0 },
   money: 0,
+  gupiaoPrice: 50,
   talkedFlags: new Set(),
   bossFlags: new Set(),
   sparFlags: new Set(),
@@ -1252,6 +1259,9 @@ function init() {
   refs.restartButton.addEventListener("click", () => resetToTitle());
   document.addEventListener("keydown", onKeydown);
   bindDpad();
+  if (refs.sellGupiaoBtn) {
+    refs.sellGupiaoBtn.addEventListener("click", () => openSellGupiao());
+  }
   renderPanels();
 }
 
@@ -1296,6 +1306,7 @@ function handleInteractInput() {
     interact();
   }
 }
+
 function startGame(modeKey) {
   const mode = MODES[modeKey] ?? MODES.standard;
   game.phase = "explore";
@@ -1316,6 +1327,7 @@ function startGame(modeKey) {
   };
   game.bag = { ...mode.bag };
   game.money = 60;
+  game.gupiaoPrice = 50;
   game.talkedFlags = new Set();
   game.bossFlags = new Set();
   game.sparFlags = new Set();
@@ -1422,6 +1434,12 @@ function onKeydown(event) {
     return;
   }
 
+  if (key === "g") {
+    openSellGupiao();
+    event.preventDefault();
+    return;
+  }
+
   if (key === "enter" || key === " ") {
     interact();
     event.preventDefault();
@@ -1456,6 +1474,7 @@ function tryMove(dx, dy, dir) {
   game.player.y = nextY;
   game.player.frame = game.player.frame === 0 ? 1 : 0;
   game.runMoves += 1;
+  updateGupiaoPrice();
 
   const warpHandled = handleWarp(nextX, nextY);
   if (!warpHandled) {
@@ -1463,6 +1482,11 @@ function tryMove(dx, dy, dir) {
   }
 
   renderPanels();
+}
+
+function updateGupiaoPrice() {
+  const delta = Math.random() * 0.1 - 0.05;
+  game.gupiaoPrice = Math.max(1, Math.round(game.gupiaoPrice * (1 + delta)));
 }
 
 function handleWarp(x, y) {
@@ -1635,12 +1659,17 @@ function openShop(shopId) {
     return;
   }
 
+  // 1. 在生成选项时，动态获取当前价格
   const choices = shop.items.map((item) => {
     if (item.id === "suzhou-garden" && game.suzhouKey) {
       return { label: `${item.name} - 已购`, value: "suzhou-owned" };
     }
-    return { label: `${item.name} - ${item.price} 豚币`, value: item.id };
+    
+    // 如果是谷票，就用动态价格，否则用固定的 item.price
+    const currentPrice = item.id === "gupiao" ? game.gupiaoPrice : item.price;
+    return { label: `${item.name} - ${currentPrice} 豚币`, value: item.id };
   });
+  
   choices.push({ label: "李妈妈别，先走", value: "leave" });
 
   openDialog(
@@ -1663,40 +1692,36 @@ function openShop(shopId) {
         openDialog("旁白", ["这别东西不存在。"]);
         return;
       }
-      if (game.money < item.price) {
+      
+      // 2. 结算时，同样动态判断实际需要扣多少钱
+      const actualPrice = item.id === "gupiao" ? game.gupiaoPrice : item.price;
+
+      if (game.money < actualPrice) {
         openDialog("豚市老板", ["豚币不够咯。"]);
         return;
       }
 
-      game.money -= item.price;
+      // 扣除实际价格
+      game.money -= actualPrice;
 
       if (item.id === "vc") {
-        game.items.vc += 1;
+        game.bag.vc += 1;
         openDialog("豚市老板", ["VC到账，晓得恰咯。"], () => openShop(shopId));
         return;
       }
       if (item.id === "vd") {
-        game.items.vd += 1;
+        game.bag.vd += 1;
         openDialog("豚市老板", ["VD到账，晓得恰咯。"], () => openShop(shopId));
         return;
       }
-      if (item.id === "charger") {
-        game.items.charger += 1;
-        openDialog("豚市老板", ["充能药物到账，蓝条起飞。"], () => openShop(shopId));
+      if (item.id === "tonic") {
+        game.bag.tonic += 1;
+        openDialog("豚市老板", ["转盘酊到账，蓝条起飞。"], () => openShop(shopId));
         return;
       }
       if (item.id === "gupiao") {
-	  game.money += 50;
-        const lose = Math.random() < 0.5;
-        if (lose) {
-          const loss = randomInt(1, 50);
-          game.money = Math.max(0, game.money - loss);
-          openDialog("豚市老板", [`谷票翻车，亏掉${loss}豚币。`], () => openShop(shopId));
-          return;
-        }
-        const gain = randomInt(0, 50);
-        game.money += gain;
-        openDialog("豚市老板", [`谷票起飞，赚到${gain}豚币。`], () => openShop(shopId));
+        game.bag.gupiao = (game.bag.gupiao || 0) + 1;
+        openDialog("豚市老板", ["谷票入袋，盘面随步数波动咯。"], () => openShop(shopId));
         return;
       }
       if (item.id === "suzhou-garden") {
@@ -1706,7 +1731,50 @@ function openShop(shopId) {
         return;
       }
 
-      openDialog("旁白", ["买到了，不过你也不晓得是啥。"]);
+      openDialog("旁白", ["买到了，不过你也不晓得是么子。"]);
+    }
+  );
+}
+
+function openSellGupiao() {
+  if (game.phase !== "explore" || game.dialog || game.battle) {
+    return;
+  }
+
+  const count = game.bag.gupiao || 0;
+  if (count <= 0) {
+    openDialog("旁白", ["谷票为0，李妈妈别。"]);
+    return;
+  }
+
+  const choices = [];
+  if (count >= 1) choices.push({ label: "卖 1 张", value: "1" });
+  if (count >= 5) choices.push({ label: "卖 5 张", value: "5" });
+  if (count >= 10) choices.push({ label: "卖 10 张", value: "10" });
+  choices.push({ label: `卖全部（${count}）`, value: "all" });
+  choices.push({ label: "李妈妈别", value: "leave" });
+
+  openDialog(
+    "谷票盘面",
+    [`当前价 ${game.gupiaoPrice} 豚币/张。要卖几张啵？`],
+    null,
+    choices,
+    (choiceId) => {
+      if (choiceId === "leave") {
+        return;
+      }
+
+      const qty = choiceId === "all" ? count : Number.parseInt(choiceId, 10);
+      const sellQty = Number.isFinite(qty) ? Math.min(count, qty) : count;
+      const revenue = sellQty * game.gupiaoPrice;
+      game.bag.gupiao = Math.max(0, count - sellQty);
+      game.money += revenue;
+
+      openDialog("旁白", [`卖出${sellQty}张，收${revenue}豚币。`], () => {
+        if (game.bag.gupiao > 0) {
+          openSellGupiao();
+        }
+      });
     }
   );
 }
@@ -2510,6 +2578,10 @@ function renderPanels() {
     button.disabled = actionDisabled;
   });
 
+  if (refs.sellGupiaoBtn) {
+    refs.sellGupiaoBtn.disabled = moveDisabled;
+  }
+
   if (game.phase === "title") {
     refs.dialogPanel.classList.add("hidden");
     refs.battlePanel.classList.add("hidden");
@@ -2526,7 +2598,7 @@ function renderPanels() {
   refs.mapName.textContent = `地图：${map.name}`;
   const weaponText = game.weapon ? ` | 武器 ${game.weapon}` : "";
   refs.heroStats.textContent = `Lv ${game.hero.level} | EXP ${game.hero.exp}/${game.hero.nextExp} | HP ${game.hero.hp}/${game.hero.maxHp} | 攻 ${game.hero.atk} 防 ${game.hero.def} | 盾 ${game.hero.guard} | 充能 ${game.hero.charge}${weaponText}`;
-  refs.bagStats.textContent = `背包：VC ${game.bag.vc}，VD ${game.bag.vd}，转盘酊 ${game.bag.tonic || 0}，余毒 ${game.hero.overtime}`;
+  refs.bagStats.textContent = `背包：VC ${game.bag.vc}，VD ${game.bag.vd}，转盘酊 ${game.bag.tonic || 0}，谷票 ${game.bag.gupiao || 0}（价 ${game.gupiaoPrice}），余毒 ${game.hero.overtime}`;
   refs.moneyStats.textContent = `豚币：${game.money}`;
   refs.questStats.textContent = `主线：${game.objective}`;
   refs.timeStats.textContent = `时长：${game.mode.name}（${game.mode.estimate}）| 步数 ${game.runMoves}`;
@@ -2697,75 +2769,6 @@ function randomInt(min, max) {
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
-
-
-
     </script>
   </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
