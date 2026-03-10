@@ -629,32 +629,32 @@ const NPCS = [
     mapId: "town",
     x: 18,
     y: 9,
-    name: "稽核总监",
+    name: "中信行长",
     palette: { hair: "#2a2a2a", body: "#6a8aa5", accent: "#cfe4f5" },
     firstLines: [
-      "稽核总监：监督来了，谁也别想躲。",
+      "中信行长：监督来了，谁也别想躲。",
       "我：监督李妈妈别，开打。",
     ],
-    repeatLines: ["稽核总监：来，继续审。"],
+    repeatLines: ["中信行长：来，继续审。"],
     battleId: "audit-chief",
     requires: "trio_done",
-    lockedLines: ["稽核总监：先去把三巨头都会了再来。"],
+    lockedLines: ["中信行长：先去把三巨头都会了再来。"],
   },
   {
     id: "opinion-engine",
     mapId: "castle",
     x: 11,
     y: 6,
-    name: "舆论放大器",
+    name: "雷军",
     palette: { hair: "#ffb84d", body: "#7d5a2f", accent: "#fff1cf" },
     firstLines: [
-      "舆论放大器：焦虑扩散中，别想下线。",
+      "雷军：焦虑扩散中，别想下线。",
       "我：那岂不是，直接拆了。",
     ],
-    repeatLines: ["舆论放大器：再来。"],
+    repeatLines: ["雷军：再来。"],
     battleId: "opinion-engine",
     requires: "trio_done",
-    lockedLines: ["舆论放大器：先把三巨头会完再说。"],
+    lockedLines: ["雷军：先把三巨头会完再说。"],
   },
   {
     id: "xiaopengyou",
@@ -773,21 +773,21 @@ const BATTLES = {
   },
   "audit-chief": {
     id: "audit-chief",
-    name: "稽核总监",
+    name: "中信行长",
     hp: 210,
     atk: 26,
     def: 11,
     exp: 45,
     gold: 40,
     specialEvery: 2,
-    specialText: "稽核总监下发审计风暴。",
+    specialText: "中信行长下发审计风暴。",
     specialBoost: 12,
     debuffTurns: 2,
     rewardCharge: 16,
   },
   "opinion-engine": {
     id: "opinion-engine",
-    name: "舆论放大器",
+    name: "雷军",
     hp: 240,
     atk: 28,
     def: 12,
@@ -1215,7 +1215,7 @@ function updateObjective() {
   if (trio < 3) {
     game.objective = `去会听歌、攀哥、炫神（${trio}/3）。`;
   } else if (bossCount < 2) {
-    game.objective = `清副本 Boss（${bossCount}/2）：稽核总监 + 舆论放大器。`;
+    game.objective = `清副本 Boss（${bossCount}/2）：中信行长 + 雷军。`;
   } else {
     game.objective = "去东境要塞狠狠干翻 ldj。";
   }
