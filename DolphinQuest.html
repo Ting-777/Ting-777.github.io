@@ -1507,7 +1507,7 @@ function talkToNpc(npc) {
       return;
     }
     openDialog(npc.name, npc.firstLines || ["开打咯。"], () => {
-      startBattle(npc.hiddenBattleId);
+      promptBattle(npc.name, npc.hiddenBattleId, "要不要帮肝脏开打啵？");
     });
     return;
   }
@@ -1529,7 +1529,7 @@ function talkToNpc(npc) {
   const canSpar = npc.sparId && areBossesDone() && !game.sparFlags.has(npc.sparId);
   if (canSpar) {
     openDialog(npc.name, npc.sparLines || ["来切磋。"], () => {
-      startBattle(npc.sparId);
+      promptBattle(npc.name, npc.sparId, "切磋开盘啵？");
     });
     return;
   }
@@ -1549,7 +1549,7 @@ function talkToNpc(npc) {
     }
 
     if (npc.battleId && !game.bossDefeated) {
-      startBattle(npc.battleId);
+      promptBattle(npc.name, npc.battleId, "要开打啵？");
     }
   });
 }
@@ -2059,6 +2059,20 @@ function openDialog(speaker, lines, onClose = null, choices = null, onChoice = n
   renderPanels();
 }
 
+function promptBattle(name, battleId, promptLine = "要开打啵？") {
+  const choices = [
+    { label: "开打", value: "fight" },
+    { label: "李妈妈别，先走", value: "leave" },
+  ];
+
+  openDialog(name, [promptLine], null, choices, (choice) => {
+    if (choice === "fight") {
+      startBattle(battleId);
+      return;
+    }
+    openDialog("旁白", ["那岂不是先撤咯。"]);
+  });
+}
 function moveDialogChoice(delta) {
   if (!game.dialog || !game.dialog.choices || game.dialog.choices.length <= 1) {
     return;
@@ -2502,11 +2516,14 @@ function logBattle(line) {
 function pushQuestLog(line, front = false) {
   if (front) {
     game.questLog.unshift(line);
+    if (game.questLog.length > QUEST_LOG_LIMIT) {
+      game.questLog.pop();
+    }
   } else {
     game.questLog.push(line);
-  }
-  if (game.questLog.length > QUEST_LOG_LIMIT) {
-    game.questLog.length = QUEST_LOG_LIMIT;
+    if (game.questLog.length > QUEST_LOG_LIMIT) {
+      game.questLog.shift();
+    }
   }
 }
 
@@ -2555,6 +2572,10 @@ function clamp(value, min, max) {
     </script>
   </body>
 </html>
+
+
+
+
 
 
 
