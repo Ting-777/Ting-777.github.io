@@ -1784,9 +1784,9 @@ function runHeroAction(actionId) {
   }
 
   if (actionId === "tea") {
-    enemy.atk = Math.max(8, enemy.atk - 4);
-    hero.charge = clamp(hero.charge + 16, 0, 99);
-    logBattle("茶艺表演：敌攻 -4。" );
+    enemy.atk = Math.max(8, enemy.atk - 2);
+    hero.charge = clamp(hero.charge - 16, 0, 99);
+    logBattle("茶艺表演：敌攻 -2。" );
     return;
   }
 
@@ -1797,7 +1797,7 @@ function runHeroAction(actionId) {
     }
     game.bag.vc -= 1;
     hero.hp = clamp(hero.hp + 72, 0, hero.maxHp);
-    hero.charge = clamp(hero.charge + 6, 0, 99);
+    hero.charge = clamp(hero.charge + 0, 0, 99);
     logBattle("恰vc咯，回血 72。" );
     return;
   }
@@ -1810,7 +1810,7 @@ function runHeroAction(actionId) {
     game.bag.vd -= 1;
     hero.hp = clamp(hero.hp + 48, 0, hero.maxHp);
     hero.overtime = 0;
-    hero.charge = clamp(hero.charge + 7, 0, 99);
+    hero.charge = clamp(hero.charge + 0, 0, 99);
     logBattle("恰vd咯，回血 48，余毒清空。" );
     return;
   }
@@ -1820,11 +1820,11 @@ function runHeroAction(actionId) {
       logBattle("八子计划没齐，八子宣言李妈妈别。");
       return;
     }
-    if (hero.charge < 40) {
+    if (hero.charge < 60) {
       logBattle("充能不够咯，嗯放得出来。");
       return;
     }
-    hero.charge -= 40;
+    hero.charge -= 60;
     const damage = calcDamage(76, 96, hero.atk + 8, enemy.def);
     enemy.hp = Math.max(0, enemy.hp - damage);
     enemy.atk = Math.max(8, enemy.atk - 2);
