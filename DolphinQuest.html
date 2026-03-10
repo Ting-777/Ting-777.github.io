@@ -406,6 +406,7 @@ const MAP_HEIGHT = {
   house: 10,
   castle: 12,
   fortress: 14,
+  arena: 10,
 };
 
 const MAP_WIDTH = {
@@ -413,6 +414,7 @@ const MAP_WIDTH = {
   house: 12,
   castle: 18,
   fortress: 22,
+  arena: 14,
 };
 
 function createGrid(width, height, fill) {
@@ -467,6 +469,7 @@ function createTown() {
   fillRect(grid, 2, 17, 8, 2, ",");
 
   grid[10][28] = "G";
+  grid[5][3] = "G";
 
   return {
     id: "town",
@@ -581,11 +584,39 @@ function createFortress() {
   };
 }
 
+function createArena() {
+  const width = MAP_WIDTH.arena;
+  const height = MAP_HEIGHT.arena;
+  const grid = createGrid(width, height, "f");
+
+  fillRect(grid, 0, 0, width, 1, "w");
+  fillRect(grid, 0, height - 1, width, 1, "w");
+  fillRect(grid, 0, 0, 1, height, "w");
+  fillRect(grid, width - 1, 0, 1, height, "w");
+
+  fillRect(grid, 2, 2, 3, 2, "b");
+  fillRect(grid, 9, 2, 3, 2, "b");
+  grid[height - 1][6] = "D";
+  grid[5][6] = "t";
+  grid[6][6] = "t";
+
+  return {
+    id: "arena",
+    name: "竞技场",
+    width,
+    height,
+    rows: toRows(grid),
+    encounters: [],
+    encounterTiles: [],
+    encounterRate: 0,
+  };
+}
 const MAPS = {
   town: createTown(),
   house: createHouse(),
   castle: createCastle(),
   fortress: createFortress(),
+  arena: createArena(),
 };
 
 const BLOCKED_TILES = new Set(["#", "~", "H", "C", "w", "b", "t", "M", "O", "P"]);
@@ -607,6 +638,8 @@ const WARP_POINTS = {
     ],
   },
   "fortress:1,7": { toMap: "town", x: 27, y: 10, dir: "left" },
+  "town:3,5": { toMap: "arena", x: 6, y: 8, dir: "up" },
+  "arena:6,9": { toMap: "town", x: 3, y: 6, dir: "down" },
 };
 
 const SIGNS = {
@@ -768,7 +801,109 @@ const NPCS = [
     requires: "spar_done",
     lockedLines: ["ldj：先清副本，再和三巨头切磋，再来。"],
   },
-];
+  {
+    id: "volunteer-1",
+    mapId: "town",
+    x: 4,
+    y: 4,
+    name: "志愿者一",
+    palette: { hair: "#8fd1ff", body: "#3a6aaa", accent: "#e4f2ff" },
+    firstLines: ["志愿者一：我来应征啵。", "我：八子计划登记。"],
+    repeatLines: ["志愿者一：我已入档。"],
+    volunteerId: "vol-1",
+  },
+  {
+    id: "volunteer-2",
+    mapId: "town",
+    x: 6,
+    y: 15,
+    name: "志愿者二",
+    palette: { hair: "#ffc27a", body: "#7d4d2f", accent: "#fff0d6" },
+    firstLines: ["志愿者二：我也报名啵。", "我：那岂不是到位。"],
+    repeatLines: ["志愿者二：继续推进。"],
+    volunteerId: "vol-2",
+  },
+  {
+    id: "volunteer-3",
+    mapId: "town",
+    x: 20,
+    y: 4,
+    name: "志愿者三",
+    palette: { hair: "#b29bff", body: "#4f54b6", accent: "#eee7ff" },
+    firstLines: ["志愿者三：给我排个号。", "我：排上咯。"],
+    repeatLines: ["志愿者三：已经在册。"],
+    volunteerId: "vol-3",
+  },
+  {
+    id: "volunteer-4",
+    mapId: "town",
+    x: 12,
+    y: 16,
+    name: "志愿者四",
+    palette: { hair: "#7ad1b1", body: "#2f7d6a", accent: "#dff8f0" },
+    firstLines: ["志愿者四：签个到啵。", "我：签上咯。"],
+    repeatLines: ["志愿者四：继续冲。"],
+    volunteerId: "vol-4",
+  },
+  {
+    id: "volunteer-5",
+    mapId: "house",
+    x: 3,
+    y: 6,
+    name: "志愿者五",
+    palette: { hair: "#9fa1a8", body: "#3a3f52", accent: "#e6e7ea" },
+    firstLines: ["志愿者五：民居也能报名啵。", "我：那岂不是。"],
+    repeatLines: ["志愿者五：我已到位。"],
+    volunteerId: "vol-5",
+  },
+  {
+    id: "volunteer-6",
+    mapId: "castle",
+    x: 5,
+    y: 8,
+    name: "志愿者六",
+    palette: { hair: "#ffd27a", body: "#8a5a2f", accent: "#fff3d6" },
+    firstLines: ["志愿者六：城堡也能报到。", "我：好咯。"],
+    repeatLines: ["志愿者六：已在册。"],
+    volunteerId: "vol-6",
+  },
+  {
+    id: "volunteer-7",
+    mapId: "fortress",
+    x: 5,
+    y: 10,
+    name: "志愿者七",
+    palette: { hair: "#7ab0ff", body: "#2f4f8a", accent: "#d9e7ff" },
+    firstLines: ["志愿者七：要塞也能上牌啵。", "我：登记。"],
+    repeatLines: ["志愿者七：已记账。"],
+    volunteerId: "vol-7",
+  },
+  {
+    id: "volunteer-8",
+    mapId: "arena",
+    x: 3,
+    y: 6,
+    name: "志愿者八",
+    palette: { hair: "#ff8fb3", body: "#a3365f", accent: "#ffd7e6" },
+    firstLines: ["志愿者八：竞技场也要凑齐。", "我：八子计划齐活。"],
+    repeatLines: ["志愿者八：已完成。"],
+    volunteerId: "vol-8",
+  },
+  {
+    id: "liver",
+    mapId: "arena",
+    x: 6,
+    y: 4,
+    name: "肝脏",
+    palette: { hair: "#2f2f2f", body: "#7c3a3a", accent: "#ffd1d1" },
+    firstLines: [
+      "肝脏：竞技场要出事咯。",
+      "王睿很难打，帮我顶住啵。",
+    ],
+    repeatLines: ["肝脏：王睿还在，顶一盘。"],
+    afterLines: ["肝脏：肝J 给你，攻击 +10。", "我：那岂不是直接加攻。"],
+    hiddenBattleId: "wangrui-boss",
+  },];
 
 const MODES = {
   speed: {
@@ -930,6 +1065,24 @@ const BATTLES = {
     ],
     rewardCharge: 18,
   },
+    "wangrui-boss": {
+    id: "wangrui-boss",
+    name: "王睿",
+    hp: 360,
+    atk: 34,
+    def: 15,
+    exp: 110,
+    gold: 90,
+    specialEvery: 2,
+    specialMoves: [
+      { type: "damage", text: "王睿冷笑一刀，伤害暴涨。", bonus: 16, overtime: 1 },
+      { type: "buff", text: "王睿蓄势加攻加防。", atk: 3, def: 2 },
+      { type: "debuff", text: "王睿打断节奏，攻防下调。", heroAtk: 3, heroDef: 3 },
+      { type: "heal", text: "王睿回春回血 36。", amount: 36 },
+      { type: "drain", text: "王睿抽干充能，充能 -18。", charge: 18 },
+    ],
+    rewardCharge: 20,
+  },
   "ldj-boss": {
     id: "ldj-boss",
     name: "劳动节·永动魔王",
@@ -1028,6 +1181,10 @@ const game = {
   talkedFlags: new Set(),
   bossFlags: new Set(),
   sparFlags: new Set(),
+  volunteerFlags: new Set(),
+  edictUnlocked: false,
+  hiddenBossDefeated: false,
+  weapon: null,
   dialog: null,
   dialogChoiceIndex: 0,
   battle: null,
@@ -1118,6 +1275,10 @@ function startGame(modeKey) {
   game.talkedFlags = new Set();
   game.bossFlags = new Set();
   game.sparFlags = new Set();
+  game.volunteerFlags = new Set();
+  game.edictUnlocked = false;
+  game.hiddenBossDefeated = false;
+  game.weapon = null;
   game.dialog = null;
   game.dialogChoiceIndex = 0;
   game.battle = null;
@@ -1130,6 +1291,8 @@ function startGame(modeKey) {
   game.ending = null;
 
   pushQuestLog("开盘：八子计划启动。先会三巨头。", true);
+  pushQuestLog("支线：找齐 8 位志愿者，解锁八子宣言。", false);
+  pushQuestLog("支线：竞技场帮肝脏打王睿，拿肝J。", false);
 
   openDialog("旁白", [
     "这别海豚蒂国开盘咯。",
@@ -1338,9 +1501,34 @@ function talkToNpc(npc) {
     return;
   }
 
+  if (npc.hiddenBattleId) {
+    if (game.hiddenBossDefeated) {
+      openDialog(npc.name, npc.afterLines || ["收工咯。"]);
+      return;
+    }
+    openDialog(npc.name, npc.firstLines || ["开打咯。"], () => {
+      startBattle(npc.hiddenBattleId);
+    });
+    return;
+  }
+
+  if (npc.volunteerId) {
+    const joined = game.volunteerFlags.has(npc.volunteerId);
+    const lines = joined ? npc.repeatLines : npc.firstLines;
+    openDialog(npc.name, lines, () => {
+      if (!joined) {
+        game.volunteerFlags.add(npc.volunteerId);
+        const count = getVolunteerProgress();
+        pushQuestLog(`志愿者到位（${count}/8）。`, false);
+        checkVolunteerUnlock();
+      }
+    });
+    return;
+  }
+
   const canSpar = npc.sparId && areBossesDone() && !game.sparFlags.has(npc.sparId);
   if (canSpar) {
-    openDialog(npc.name, npc.sparLines || ["来切磋。"] , () => {
+    openDialog(npc.name, npc.sparLines || ["来切磋。"], () => {
       startBattle(npc.sparId);
     });
     return;
@@ -1456,6 +1644,22 @@ function getSparProgress() {
   if (game.sparFlags.has("spar-pange")) count += 1;
   if (game.sparFlags.has("spar-xuanshen")) count += 1;
   return count;
+}
+
+function getVolunteerProgress() {
+  return game.volunteerFlags.size;
+}
+
+function checkVolunteerUnlock() {
+  if (game.edictUnlocked) {
+    return false;
+  }
+  if (getVolunteerProgress() >= 8) {
+    game.edictUnlocked = true;
+    pushQuestLog("八子计划到位，八子宣言解锁。", false);
+    return true;
+  }
+  return false;
 }
 
 function isSparDone() {
@@ -1612,8 +1816,12 @@ function runHeroAction(actionId) {
   }
 
   if (actionId === "edict") {
+    if (!game.edictUnlocked) {
+      logBattle("八子计划没齐，八子宣言李妈妈别。");
+      return;
+    }
     if (hero.charge < 40) {
-      logBattle("充能不够咯，嗯放得出来。" );
+      logBattle("充能不够咯，嗯放得出来。");
       return;
     }
     hero.charge -= 40;
@@ -1743,6 +1951,14 @@ function winBattle() {
   const goldGain = enemy.gold ?? 0;
   const expLines = applyExp(expGain);
   const goldLines = applyGold(goldGain);
+  const bonusLines = [];
+  if (enemy.id === "wangrui-boss" && !game.hiddenBossDefeated) {
+    game.hiddenBossDefeated = true;
+    game.weapon = "肝J";
+    game.hero.atk += 10;
+    bonusLines.push("获得隐藏武器 肝J，攻击 +10。");
+    pushQuestLog("获得肝J，攻击 +10。", false);
+  }
 
   if (enemy.id === "audit-chief" || enemy.id === "opinion-engine") {
     game.bossFlags.add(enemy.id);
@@ -1774,6 +1990,9 @@ function winBattle() {
   }
   if (goldLines.length) {
     lines.push(...goldLines);
+  }
+  if (bonusLines.length) {
+    lines.push(...bonusLines);
   }
   openDialog("旁白", lines);
 }
@@ -2160,7 +2379,8 @@ function renderPanels() {
 
   const map = MAPS[game.mapId];
   refs.mapName.textContent = `地图：${map.name}`;
-  refs.heroStats.textContent = `Lv ${game.hero.level} | EXP ${game.hero.exp}/${game.hero.nextExp} | HP ${game.hero.hp}/${game.hero.maxHp} | 攻 ${game.hero.atk} 防 ${game.hero.def} | 盾 ${game.hero.guard} | 充能 ${game.hero.charge}`;
+  const weaponText = game.weapon ? ` | 武器 ${game.weapon}` : "";
+  refs.heroStats.textContent = `Lv ${game.hero.level} | EXP ${game.hero.exp}/${game.hero.nextExp} | HP ${game.hero.hp}/${game.hero.maxHp} | 攻 ${game.hero.atk} 防 ${game.hero.def} | 盾 ${game.hero.guard} | 充能 ${game.hero.charge}${weaponText}`;
   refs.bagStats.textContent = `背包：VC ${game.bag.vc}，VD ${game.bag.vd}，转盘酊 ${game.bag.tonic || 0}，余毒 ${game.hero.overtime}`;
   refs.moneyStats.textContent = `豚币：${game.money}`;
   refs.questStats.textContent = `主线：${game.objective}`;
@@ -2231,10 +2451,14 @@ function renderBattlePanel() {
   for (const action of BATTLE_ACTIONS) {
     const button = document.createElement("button");
     button.type = "button";
-    button.textContent = action.label;
+    let label = action.label;
+    if (action.id === "edict" && !game.edictUnlocked) {
+      label = `${action.label}（未解锁）`;
+    }
+    button.textContent = label;
     button.addEventListener("click", () => runBattleTurn(action.id));
 
-    if (action.id === "edict" && game.hero.charge < 40) {
+    if (action.id === "edict" && (!game.edictUnlocked || game.hero.charge < 40)) {
       button.disabled = true;
     }
     if (action.id === "vc" && game.bag.vc <= 0) {
@@ -2331,6 +2555,32 @@ function clamp(value, min, max) {
     </script>
   </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
