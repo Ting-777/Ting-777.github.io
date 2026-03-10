@@ -407,6 +407,7 @@ const MAP_HEIGHT = {
   castle: 12,
   fortress: 14,
   arena: 10,
+  suzhou: 12,
 };
 
 const MAP_WIDTH = {
@@ -415,6 +416,7 @@ const MAP_WIDTH = {
   castle: 18,
   fortress: 22,
   arena: 14,
+  suzhou: 18,
 };
 
 function createGrid(width, height, fill) {
@@ -470,6 +472,7 @@ function createTown() {
 
   grid[10][28] = "G";
   grid[5][3] = "G";
+  grid[2][25] = "G";
 
   return {
     id: "town",
@@ -611,15 +614,50 @@ function createArena() {
     encounterRate: 0,
   };
 }
+
+function createSuzhouGarden() {
+  const width = MAP_WIDTH.suzhou;
+  const height = MAP_HEIGHT.suzhou;
+  const grid = createGrid(width, height, ".");
+
+  fillRect(grid, 0, 0, width, 1, "#");
+  fillRect(grid, 0, height - 1, width, 1, "#");
+  fillRect(grid, 0, 0, 1, height, "#");
+  fillRect(grid, width - 1, 0, 1, height, "#");
+
+  fillRect(grid, 2, 2, 6, 4, "~");
+  fillRect(grid, 10, 3, 5, 3, "~");
+  fillRect(grid, 3, 7, 10, 2, ",");
+
+  for (let x = 1; x < width - 1; x += 1) {
+    grid[height - 2][x] = "=";
+  }
+
+  grid[height - 1][8] = "D";
+  grid[6][12] = "L";
+
+  return {
+    id: "suzhou",
+    name: "苏州园林",
+    width,
+    height,
+    rows: toRows(grid),
+    encounters: [],
+    encounterTiles: [],
+    encounterRate: 0,
+  };
+}
+
 const MAPS = {
   town: createTown(),
   house: createHouse(),
   castle: createCastle(),
   fortress: createFortress(),
   arena: createArena(),
+  suzhou: createSuzhouGarden(),
 };
 
-const BLOCKED_TILES = new Set(["#", "~", "H", "C", "w", "b", "t", "M", "O", "P"]);
+const BLOCKED_TILES = new Set(["#", "~", "H", "C", "w", "b", "t", "M", "O", "P", "L"]);
 
 const WARP_POINTS = {
   "town:8,9": { toMap: "house", x: 5, y: 8, dir: "up" },
@@ -640,6 +678,8 @@ const WARP_POINTS = {
   "fortress:1,7": { toMap: "town", x: 27, y: 10, dir: "left" },
   "town:3,5": { toMap: "arena", x: 6, y: 8, dir: "up" },
   "arena:6,9": { toMap: "town", x: 3, y: 6, dir: "down" },
+  "town:25,2": { toMap: "suzhou", x: 8, y: 10, dir: "up", requires: "suzhou_key", lockedText: ["园林没钥匙，李妈妈别。"] },
+  "suzhou:8,11": { toMap: "town", x: 25, y: 1, dir: "down" },
 };
 
 const SIGNS = {
@@ -660,6 +700,7 @@ const SHOPS = {
       { id: "vc", name: "恰vc咯", price: 22, bagKey: "vc", amount: 1 },
       { id: "vd", name: "恰vd咯", price: 28, bagKey: "vd", amount: 1 },
       { id: "tonic", name: "转盘酊", price: 26, bagKey: "tonic", amount: 1 },
+      { id: "suzhou-garden", name: "苏州园林", price: 10000, bagKey: null, amount: 1 },
     ],
   },
 };
@@ -1185,6 +1226,8 @@ const game = {
   edictUnlocked: false,
   hiddenBossDefeated: false,
   weapon: null,
+  suzhouKey: false,
+  legendaryTaken: false,
   dialog: null,
   dialogChoiceIndex: 0,
   battle: null,
@@ -1279,6 +1322,8 @@ function startGame(modeKey) {
   game.edictUnlocked = false;
   game.hiddenBossDefeated = false;
   game.weapon = null;
+  game.suzhouKey = false;
+  game.legendaryTaken = false;
   game.dialog = null;
   game.dialogChoiceIndex = 0;
   game.battle = null;
@@ -1441,6 +1486,11 @@ function handleWarp(x, y) {
     return true;
   }
 
+  if (warp.requires === "suzhou_key" && !game.suzhouKey) {
+    openDialog("门卫", warp.lockedText || ["园林封着咯。"]);
+    return true;
+  }
+
   game.mapId = warp.toMap;
   game.player.x = warp.x;
   game.player.y = warp.y;
@@ -1474,6 +1524,29 @@ function interact() {
   }
   if (tile === "P") {
     openDialog("旁白", ["这别是书柜，想看也李妈妈别。"]);
+    return;
+  }
+
+    if (tile === "L") {
+    if (game.legendaryTaken) {
+      openDialog("旁白", ["宝箱空咯，啥都没。"]);
+      return;
+    }
+    game.legendaryTaken = true;
+    const bonusAtk = 24;
+    const bonusDef = 6;
+    const bonusHp = 60;
+    game.hero.atk += bonusAtk;
+    game.hero.def += bonusDef;
+    game.hero.maxHp += bonusHp;
+    game.hero.hp = game.hero.maxHp;
+    const weaponName = game.weapon ? `${game.weapon}+苏园神兵` : "苏园神兵";
+    game.weapon = weaponName;
+    pushQuestLog("苏园神兵入手，攻防暴涨。", false);
+    openDialog("旁白", [
+      "苏州园林传奇宝箱开盘。",
+      `获得苏园神兵：攻 +${bonusAtk}，防 +${bonusDef}，HP +${bonusHp}。`,
+    ]);
     return;
   }
 
@@ -1561,10 +1634,12 @@ function openShop(shopId) {
     return;
   }
 
-  const choices = shop.items.map((item) => ({
-    label: `${item.name} - ${item.price} 豚币`,
-    value: item.id,
-  }));
+  const choices = shop.items.map((item) => {
+    if (item.id === "suzhou-garden" && game.suzhouKey) {
+      return { label: `${item.name} - 已购`, value: "suzhou-owned" };
+    }
+    return { label: `${item.name} - ${item.price} 豚币`, value: item.id };
+  });
   choices.push({ label: "李妈妈别，先走", value: "leave" });
 
   openDialog(
@@ -1577,23 +1652,47 @@ function openShop(shopId) {
         openDialog("旁白", ["老板挥手：下回再来咯。"]);
         return;
       }
-
-      const item = shop.items.find((entry) => entry.id === choiceId);
-      if (!item) {
-        openShop(shopId);
+      if (choiceId === "suzhou-owned") {
+        openDialog("豚市老板", ["苏州园林你已经买了咯。"], () => openShop(shopId));
         return;
       }
 
+      const item = shop.items.find((entry) => entry.id === choiceId);
+      if (!item) {
+        openDialog("旁白", ["这别东西不存在。"]);
+        return;
+      }
       if (game.money < item.price) {
-        openDialog("豚市老板", ["豚币不够咯，恰李妈妈别。"]);
+        openDialog("豚市老板", ["豚币不够咯。"]);
         return;
       }
 
       game.money -= item.price;
-      game.bag[item.bagKey] = (game.bag[item.bagKey] || 0) + item.amount;
-      pushQuestLog(`购买：${item.name}。`, false);
-      openShop(shopId);
-    },
+
+      if (item.id === "vc") {
+        game.items.vc += 1;
+        openDialog("豚市老板", ["VC到账，晓得恰咯。"], () => openShop(shopId));
+        return;
+      }
+      if (item.id === "vd") {
+        game.items.vd += 1;
+        openDialog("豚市老板", ["VD到账，晓得恰咯。"], () => openShop(shopId));
+        return;
+      }
+      if (item.id === "charger") {
+        game.items.charger += 1;
+        openDialog("豚市老板", ["充能药物到账，蓝条起飞。"], () => openShop(shopId));
+        return;
+      }
+      if (item.id === "suzhou-garden") {
+        game.suzhouKey = true;
+        pushQuestLog("购买苏州园林，钥匙到手。", false);
+        openDialog("豚市老板", ["苏州园林钥匙拿走咯。"], () => openShop(shopId));
+        return;
+      }
+
+      openDialog("旁白", ["买到了，不过你也不晓得是啥。"]);
+    }
   );
 }
 
@@ -2308,6 +2407,18 @@ function drawTile(screenX, screenY, tile) {
     return;
   }
 
+  if (tile === "L") {
+    ctx.fillStyle = "#3b2a1a";
+    ctx.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
+    ctx.fillStyle = "#d7b25c";
+    ctx.fillRect(screenX + 4, screenY + 6, TILE_SIZE - 8, 12);
+    ctx.fillStyle = "#8b6a2b";
+    ctx.fillRect(screenX + 4, screenY + 11, TILE_SIZE - 8, 2);
+    ctx.fillStyle = "#e6d66f";
+    ctx.fillRect(screenX + 11, screenY + 9, 2, 4);
+    return;
+  }
+
   ctx.fillStyle = "#000";
   ctx.fillRect(screenX, screenY, TILE_SIZE, TILE_SIZE);
 }
@@ -2577,6 +2688,27 @@ function clamp(value, min, max) {
     </script>
   </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
