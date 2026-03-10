@@ -1751,20 +1751,20 @@ function runHeroAction(actionId) {
   if (actionId === "wheel") {
     const roll = Math.random();
     if (roll < 0.25) {
-      const damage = calcDamage(56, 74, hero.atk + 4, enemy.def);
+      const damage = calcDamage(36, 74, hero.atk + 4, enemy.def);
       enemy.hp = Math.max(0, enemy.hp - damage);
-      hero.charge = clamp(hero.charge + 14, 0, 99);
+      hero.charge = clamp(hero.charge + 0, 0, 99);
       logBattle(`Matrix，转盘暴击 ${damage}。`);
     } else if (roll < 0.65) {
-      const damage = calcDamage(30, 42, hero.atk, enemy.def);
+      const damage = calcDamage(15, 20, hero.atk, enemy.def);
       enemy.hp = Math.max(0, enemy.hp - damage);
-      hero.charge = clamp(hero.charge + 10, 0, 99);
+      hero.charge = clamp(hero.charge + 0, 0, 99);
       logBattle(`转盘稳落点，伤害 ${damage}，xbmd。`);
     } else {
       const heal = 26;
       hero.hp = clamp(hero.hp + heal, 0, hero.maxHp);
       hero.guard = clamp(hero.guard + 7, 0, 99);
-      hero.charge = clamp(hero.charge + 6, 0, 99);
+      hero.charge = clamp(hero.charge + 0, 0, 99);
       logBattle(`转盘奶格回血 ${heal}。`);
     }
     return;
@@ -1784,6 +1784,11 @@ function runHeroAction(actionId) {
   }
 
   if (actionId === "tea") {
+     const cost = 16;
+    if (hero.charge < cost) {
+      logBattle("充能不够，表演李妈妈别。" );
+      return;
+    }
     enemy.atk = Math.max(8, enemy.atk - 2);
     hero.charge = clamp(hero.charge - 16, 0, 99);
     logBattle("茶艺表演：敌攻 -2。" );
