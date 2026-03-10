@@ -481,7 +481,7 @@ function createTown() {
 
   return {
     id: "town",
-    name: "海豚蒂国首府",
+    name: "海豚蒂国首府柏林",
     width,
     height,
     rows: toRows(grid),
@@ -808,7 +808,7 @@ const NPCS = [
     name: "雷军",
     palette: { hair: "#ffb84d", body: "#7d5a2f", accent: "#fff1cf" },
     firstLines: [
-      "雷军：焦虑扩散中，别想下线。",
+      "雷军：小米吊，别想下线。",
       "我：那岂不是，直接拆了。",
     ],
     repeatLines: ["雷军：再来。"],
@@ -1485,7 +1485,7 @@ function tryMove(dx, dy, dir) {
 }
 
 function updateGupiaoPrice() {
-  const delta = Math.random() * 0.1 - 0.05;
+  const delta = Math.random() * 0.2 - 0.097;
   game.gupiaoPrice = Math.max(1, Math.round(game.gupiaoPrice * (1 + delta)));
 }
 
@@ -2771,4 +2771,5 @@ function clamp(value, min, max) {
 }
     </script>
   </body>
+
 </html>
