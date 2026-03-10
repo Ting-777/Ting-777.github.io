@@ -700,6 +700,7 @@ const SHOPS = {
       { id: "vc", name: "恰vc咯", price: 22, bagKey: "vc", amount: 1 },
       { id: "vd", name: "恰vd咯", price: 28, bagKey: "vd", amount: 1 },
       { id: "tonic", name: "转盘酊", price: 26, bagKey: "tonic", amount: 1 },
+      { id: "gupiao", name: "谷票", price: 50, bagKey: null, amount: 1 },
       { id: "suzhou-garden", name: "苏州园林", price: 10000, bagKey: null, amount: 1 },
     ],
   },
@@ -1682,6 +1683,20 @@ function openShop(shopId) {
       if (item.id === "charger") {
         game.items.charger += 1;
         openDialog("豚市老板", ["充能药物到账，蓝条起飞。"], () => openShop(shopId));
+        return;
+      }
+      if (item.id === "gupiao") {
+	  game.money += 50;
+        const lose = Math.random() < 0.5;
+        if (lose) {
+          const loss = randomInt(1, 50);
+          game.money = Math.max(0, game.money - loss);
+          openDialog("豚市老板", [`谷票翻车，亏掉${loss}豚币。`], () => openShop(shopId));
+          return;
+        }
+        const gain = randomInt(0, 50);
+        game.money += gain;
+        openDialog("豚市老板", [`谷票起飞，赚到${gain}豚币。`], () => openShop(shopId));
         return;
       }
       if (item.id === "suzhou-garden") {
@@ -2688,6 +2703,8 @@ function clamp(value, min, max) {
     </script>
   </body>
 </html>
+
+
 
 
 
