@@ -281,8 +281,7 @@ button:disabled {
 
       <section id="title-screen" class="panel title-panel">
         <p>
-          你操控豚师 Tim 在海豚蒂国走格子：进民居、入城堡、会三巨头，
-          最后克东境要塞狠狠干翻 ldj 啵。
+          你操控豚师 Tim 在海豚蒂国走格子：进民居、入城堡、会三巨头、清副本、再切磋，`n          最后克东境要塞狠狠干翻 ldj 啵。
         </p>
         <div class="mode-list">
           <button data-mode="speed" type="button">1. 速通档（10-15 分钟）</button>
@@ -310,7 +309,7 @@ button:disabled {
             <ul>
               <li>面向 NPC 按 Enter/Space 对话咯。</li>
               <li>站门口就能进出房屋 / 城堡 / 要塞。</li>
-              <li>先和三巨头聊完，再去打 ldj 魔王。</li>
+              <li>先清两位副本，再和三巨头切磋，最后打 ldj 魔王。</li>
             </ul>
             <h3>任务日志</h3>
             <ul id="quest-log"></ul>
@@ -538,10 +537,10 @@ const WARP_POINTS = {
     x: 2,
     y: 7,
     dir: "right",
-    requires: "bosses_done",
+    requires: "spar_done",
     lockedText: [
       "东门封着咯。",
-      "先清两位副本 Boss，才开门啵。",
+      "先清两位副本 Boss，再找三巨头切磋，才开门啵。",
     ],
   },
   "fortress:1,7": { toMap: "town", x: 27, y: 10, dir: "left" },
@@ -570,7 +569,7 @@ const SHOPS = {
 };
 
 const NPCS = [
-  {
+    {
     id: "tingge",
     mapId: "town",
     x: 12,
@@ -583,6 +582,12 @@ const NPCS = [
       "主线更新：去找攀哥和炫神。",
     ],
     repeatLines: ["听歌：这别口径不改，克找剩下俩。"],
+    sparLines: [
+      "听歌：副本清完了啵，来切磋文案与拳头。",
+      "我：那岂不是开盘。",
+    ],
+    sparRepeatLines: ["听歌：切磋已过，冲 ldj 去。"],
+    sparId: "spar-tingge",
     questFlag: "talk_tingge",
   },
   {
@@ -594,7 +599,7 @@ const NPCS = [
     palette: { hair: "#6c5139", body: "#3c8b72", accent: "#f0e5d6" },
     shopId: "town-shop",
   },
-  {
+    {
     id: "pange",
     mapId: "house",
     x: 6,
@@ -607,9 +612,15 @@ const NPCS = [
       "主线更新：炫神在城堡等你咯。",
     ],
     repeatLines: ["攀哥：流程已经锁死，继续走。"],
+    sparLines: [
+      "攀哥：副本清完了，切磋流程与拳头。",
+      "我：那你岂不是来真格。",
+    ],
+    sparRepeatLines: ["攀哥：切磋已过，继续推进。"],
+    sparId: "spar-pange",
     questFlag: "talk_pange",
   },
-  {
+    {
     id: "xuanshen",
     mapId: "castle",
     x: 8,
@@ -622,6 +633,12 @@ const NPCS = [
       "主线更新：去镇里和城堡清副本 Boss。",
     ],
     repeatLines: ["炫神：先清副本，再去要塞。"],
+    sparLines: [
+      "炫神：副本清完了啵？来切磋，舆论也要练。",
+      "我：那岂不是带节奏。",
+    ],
+    sparRepeatLines: ["炫神：切磋完咯，去要塞收工。"],
+    sparId: "spar-xuanshen",
     questFlag: "talk_xuanshen",
   },
   {
@@ -685,8 +702,8 @@ const NPCS = [
     ],
     repeatLines: ["ldj：有本事就来，别嘴上。"],
     battleId: "ldj-boss",
-    requires: "bosses_done",
-    lockedLines: ["ldj：先把副本清完再来。"],
+    requires: "spar_done",
+    lockedLines: ["ldj：先清副本，再和三巨头切磋，再来。"],
   },
 ];
 
@@ -785,7 +802,7 @@ const BATTLES = {
     debuffTurns: 2,
     rewardCharge: 16,
   },
-  "opinion-engine": {
+    "opinion-engine": {
     id: "opinion-engine",
     name: "雷军",
     hp: 240,
@@ -799,18 +816,73 @@ const BATTLES = {
     debuffTurns: 2,
     rewardCharge: 18,
   },
+  "spar-tingge": {
+    id: "spar-tingge",
+    name: "听歌",
+    hp: 220,
+    atk: 26,
+    def: 10,
+    exp: 60,
+    gold: 50,
+    specialEvery: 2,
+    specialMoves: [
+      { type: "debuff", text: "听歌封口径，攻防下调。", heroAtk: 3, heroDef: 2 },
+      { type: "heal", text: "听歌翻案回魂，回血 28。", amount: 28 },
+      { type: "buff", text: "听歌定调加防，攻防上涨。", atk: 2, def: 2 },
+      { type: "damage", text: "听歌点名成文，伤害上升。", bonus: 10, overtime: 1 },
+    ],
+    rewardCharge: 18,
+  },
+  "spar-pange": {
+    id: "spar-pange",
+    name: "攀哥",
+    hp: 230,
+    atk: 27,
+    def: 11,
+    exp: 62,
+    gold: 52,
+    specialEvery: 2,
+    specialMoves: [
+      { type: "buff", text: "攀哥卡位锁线，防御上扬。", atk: 1, def: 3 },
+      { type: "drain", text: "攀哥流程拉闸，充能 -14。", charge: 14 },
+      { type: "heal", text: "攀哥招商回款，回血 32。", amount: 32 },
+      { type: "damage", text: "攀哥冲刺封单，伤害上升。", bonus: 12 },
+    ],
+    rewardCharge: 18,
+  },
+  "spar-xuanshen": {
+    id: "spar-xuanshen",
+    name: "炫神",
+    hp: 210,
+    atk: 28,
+    def: 10,
+    exp: 64,
+    gold: 54,
+    specialEvery: 2,
+    specialMoves: [
+      { type: "buff", text: "炫神舆论拉满，攻击提升。", atk: 4 },
+      { type: "debuff", text: "炫神反向带节奏，攻防下调。", heroAtk: 2, heroDef: 3 },
+      { type: "heal", text: "炫神情绪回潮，回血 24。", amount: 24 },
+      { type: "damage", text: "炫神热点爆破，伤害上升。", bonus: 14, overtime: 1 },
+    ],
+    rewardCharge: 18,
+  },
   "ldj-boss": {
     id: "ldj-boss",
     name: "劳动节·永动魔王",
-    hp: 420,
-    atk: 36,
-    def: 16,
-    exp: 120,
-    gold: 120,
+    hp: 520,
+    atk: 42,
+    def: 18,
+    exp: 150,
+    gold: 160,
     specialEvery: 2,
-    specialText: "ldj 施放恶劳永动。",
-    specialBoost: 20,
-    debuffTurns: 3,
+    specialMoves: [
+      { type: "damage", text: "ldj 启动永动加班，伤害暴涨。", bonus: 18, overtime: 2 },
+      { type: "drain", text: "ldj 抢夺周末，充能 -20。", charge: 20 },
+      { type: "buff", text: "ldj KPI 叠满，攻防上扬。", atk: 4, def: 3 },
+      { type: "heal", text: "ldj 恶劳回血，回血 40。", amount: 40 },
+      { type: "debuff", text: "ldj 冷启动压制，攻防下调。", heroAtk: 4, heroDef: 4 },
+    ],
     rewardCharge: 0,
     boss: true,
   },
@@ -887,6 +959,7 @@ const game = {
   money: 0,
   talkedFlags: new Set(),
   bossFlags: new Set(),
+  sparFlags: new Set(),
   dialog: null,
   dialogChoiceIndex: 0,
   battle: null,
@@ -934,6 +1007,7 @@ function startGame(modeKey) {
   game.money = 60;
   game.talkedFlags = new Set();
   game.bossFlags = new Set();
+  game.sparFlags = new Set();
   game.dialog = null;
   game.dialogChoiceIndex = 0;
   game.battle = null;
@@ -1089,6 +1163,11 @@ function handleWarp(x, y) {
     return true;
   }
 
+  if (warp.requires === "spar_done" && !isSparDone()) {
+    openDialog("门卫", warp.lockedText || ["门封着咯。"]);
+    return true;
+  }
+
   game.mapId = warp.toMap;
   game.player.x = warp.x;
   game.player.y = warp.y;
@@ -1139,8 +1218,26 @@ function talkToNpc(npc) {
     return;
   }
 
+  if (npc.requires === "spar_done" && !isSparDone()) {
+    openDialog(npc.name, npc.lockedLines || ["切磋没完。"]);
+    return;
+  }
+
   if (npc.shopId) {
     openShop(npc.shopId);
+    return;
+  }
+
+  const canSpar = npc.sparId && areBossesDone() && !game.sparFlags.has(npc.sparId);
+  if (canSpar) {
+    openDialog(npc.name, npc.sparLines || ["来切磋。"] , () => {
+      startBattle(npc.sparId);
+    });
+    return;
+  }
+
+  if (npc.sparId && game.sparFlags.has(npc.sparId) && npc.sparRepeatLines) {
+    openDialog(npc.name, npc.sparRepeatLines);
     return;
   }
 
@@ -1205,6 +1302,7 @@ function openShop(shopId) {
 function updateObjective() {
   const trio = getTrioProgress();
   const bossCount = getBossProgress();
+  const sparCount = getSparProgress();
 
   if (game.bossDefeated) {
     game.objective = "主线收工咯。";
@@ -1216,6 +1314,8 @@ function updateObjective() {
     game.objective = `去会听歌、攀哥、炫神（${trio}/3）。`;
   } else if (bossCount < 2) {
     game.objective = `清副本 Boss（${bossCount}/2）：中信行长 + 雷军。`;
+  } else if (sparCount < 3) {
+    game.objective = `找三巨头切磋武艺（${sparCount}/3）。`;
   } else {
     game.objective = "去东境要塞狠狠干翻 ldj。";
   }
@@ -1240,10 +1340,21 @@ function getBossProgress() {
   return count;
 }
 
+function getSparProgress() {
+  let count = 0;
+  if (game.sparFlags.has("spar-tingge")) count += 1;
+  if (game.sparFlags.has("spar-pange")) count += 1;
+  if (game.sparFlags.has("spar-xuanshen")) count += 1;
+  return count;
+}
+
+function isSparDone() {
+  return getSparProgress() >= 3;
+}
+
 function areBossesDone() {
   return getBossProgress() >= 2;
 }
-
 function tryRandomEncounter(tile) {
   const map = MAPS[game.mapId];
   if (!map.encounters.length || !map.encounterTiles.includes(tile)) {
@@ -1418,14 +1529,51 @@ function runHeroAction(actionId) {
 function runEnemyAction() {
   const hero = game.hero;
   const enemy = game.battle.enemy;
-  const special = enemy.specialEvery > 0 && game.battle.turn % enemy.specialEvery === 0;
+  const hasMoves = Array.isArray(enemy.specialMoves) && enemy.specialMoves.length > 0;
+  const specialEvery = enemy.specialEvery ?? 0;
+  const specialReady = hasMoves
+    ? (specialEvery > 0 ? game.battle.turn % specialEvery === 0 : Math.random() < 0.35)
+    : (enemy.specialEvery > 0 && game.battle.turn % enemy.specialEvery === 0);
 
   let incoming = calcDamage(10, 16, enemy.atk, hero.def);
 
-  if (special) {
-    incoming += enemy.specialBoost;
-    hero.overtime = Math.max(hero.overtime, enemy.debuffTurns || 0);
-    logBattle(enemy.specialText);
+  if (specialReady) {
+    if (hasMoves) {
+      const move = enemy.specialMoves[game.battle.turn % enemy.specialMoves.length];
+      logBattle(move.text);
+
+      if (move.type === "damage") {
+        incoming += move.bonus || 0;
+        if (move.overtime) {
+          hero.overtime = Math.max(hero.overtime, move.overtime);
+        }
+      }
+
+      if (move.type === "heal") {
+        enemy.hp = clamp(enemy.hp + (move.amount || 0), 0, enemy.maxHp);
+      }
+
+      if (move.type === "buff") {
+        enemy.atk += move.atk || 0;
+        enemy.def += move.def || 0;
+      }
+
+      if (move.type === "debuff") {
+        hero.atk = Math.max(6, hero.atk - (move.heroAtk || 0));
+        hero.def = Math.max(4, hero.def - (move.heroDef || 0));
+        if (move.overtime) {
+          hero.overtime = Math.max(hero.overtime, move.overtime);
+        }
+      }
+
+      if (move.type === "drain") {
+        hero.charge = clamp(hero.charge - (move.charge || 0), 0, 99);
+      }
+    } else {
+      incoming += enemy.specialBoost;
+      hero.overtime = Math.max(hero.overtime, enemy.debuffTurns || 0);
+      logBattle(enemy.specialText);
+    }
   }
 
   if (hero.guard > 0) {
@@ -1489,6 +1637,12 @@ function winBattle() {
   if (enemy.id === "audit-chief" || enemy.id === "opinion-engine") {
     game.bossFlags.add(enemy.id);
     pushQuestLog(`${enemy.name} 已清。`, false);
+    updateObjective();
+  }
+
+  if (enemy.id === "spar-tingge" || enemy.id === "spar-pange" || enemy.id === "spar-xuanshen") {
+    game.sparFlags.add(enemy.id);
+    pushQuestLog(`${enemy.name} 切磋完成。`, false);
     updateObjective();
   }
 
@@ -2051,3 +2205,7 @@ function clamp(value, min, max) {
     </script>
   </body>
 </html>
+
+
+
+
