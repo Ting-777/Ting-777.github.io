@@ -1154,7 +1154,7 @@ function talkToNpc(npc) {
     }
 
     if (npc.battleId && !game.bossDefeated) {
-      startBattle(npc.battleId, true);
+      startBattle(npc.battleId);
     }
   });
 }
@@ -1256,10 +1256,10 @@ function tryRandomEncounter(tile) {
   }
 
   const enemyId = map.encounters[randomInt(0, map.encounters.length - 1)];
-  startBattle(enemyId, false);
+  startBattle(enemyId);
 }
 
-function startBattle(enemyId, isBoss) {
+function startBattle(enemyId) {
   const base = BATTLES[enemyId];
   if (!base) {
     return;
@@ -1272,7 +1272,7 @@ function startBattle(enemyId, isBoss) {
 
   game.phase = "battle";
   game.battle = {
-    isBoss,
+    isBoss: Boolean(base.boss),
     enemy: { ...base, hp, maxHp: hp, atk, def },
     turn: 1,
   };
@@ -1492,7 +1492,7 @@ function winBattle() {
     updateObjective();
   }
 
-  if (game.battle.isBoss || enemy.boss) {
+  if (enemy.boss) {
     game.bossDefeated = true;
     updateObjective();
     finishGame(true, expGain, expLines, goldGain, goldLines);
@@ -1943,7 +1943,7 @@ function renderBattlePanel() {
 
   refs.battlePanel.classList.remove("hidden");
   const enemy = game.battle.enemy;
-  refs.battleTitle.textContent = game.battle.isBoss ? "Boss 战" : "野外战";
+  refs.battleTitle.textContent = enemy.boss ? "Boss 战" : "野外战";
   refs.battleEnemy.textContent = `敌方：${enemy.name} | HP ${enemy.hp}/${enemy.maxHp} | 攻 ${enemy.atk} 防 ${enemy.def}`;
   refs.battleHero.textContent = `我方：Lv ${game.hero.level} | HP ${game.hero.hp}/${game.hero.maxHp} | 盾 ${game.hero.guard} | 充能 ${game.hero.charge} | VC ${game.bag.vc} VD ${game.bag.vd} | 转盘酊 ${game.bag.tonic || 0}`;
 
@@ -2045,6 +2045,8 @@ function randomInt(min, max) {
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
+
+
 
     </script>
   </body>
