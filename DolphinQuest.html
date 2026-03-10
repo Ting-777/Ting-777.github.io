@@ -242,6 +242,49 @@ button:disabled {
   line-height: 1.4;
 }
 
+.dpad {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: repeat(3, 54px);
+  grid-template-rows: repeat(3, 54px);
+  gap: 6px;
+  z-index: 20;
+}
+
+.dpad-btn {
+  width: 54px;
+  height: 54px;
+  padding: 0;
+}
+
+.dpad-up {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.dpad-left {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.dpad-center {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.dpad-right {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.dpad-down {
+  grid-column: 2;
+  grid-row: 3;
+}
+
 .ending-panel {
   max-width: 980px;
   margin-left: auto;
@@ -268,6 +311,17 @@ button:disabled {
     width: auto;
     max-height: 55vh;
   }
+
+  .dpad {
+    bottom: 12px;
+    grid-template-columns: repeat(3, 46px);
+    grid-template-rows: repeat(3, 46px);
+  }
+
+  .dpad-btn {
+    width: 46px;
+    height: 46px;
+  }
 }
 
     </style>
@@ -281,7 +335,8 @@ button:disabled {
 
       <section id="title-screen" class="panel title-panel">
         <p>
-          你操控豚师 Tim 在海豚蒂国走格子：进民居、入城堡、会三巨头、清副本、再切磋，`n          最后克东境要塞狠狠干翻 ldj 啵。
+          你操控豚师 Tim 在海豚蒂国走格子：进民居、入城堡、会三巨头、清副本、再切磋，
+          最后克东境要塞狠狠干翻 ldj 啵。
         </p>
         <div class="mode-list">
           <button data-mode="speed" type="button">1. 速通档（10-15 分钟）</button>
@@ -330,6 +385,14 @@ button:disabled {
           <div id="battle-log" class="battle-log"></div>
         </section>
       </section>
+
+        <div class="dpad hidden" id="dpad">
+          <button type="button" class="dpad-btn dpad-up" data-move="up">上</button>
+          <button type="button" class="dpad-btn dpad-left" data-move="left">左</button>
+          <button type="button" class="dpad-btn dpad-center" data-action="interact">交互</button>
+          <button type="button" class="dpad-btn dpad-right" data-move="right">右</button>
+          <button type="button" class="dpad-btn dpad-down" data-move="down">下</button>
+        </div>
 
       <section id="ending-screen" class="panel ending-panel hidden">
         <h2 id="ending-title">结局</h2>
@@ -908,6 +971,7 @@ const HERO_MAX_HP = 260;
 const QUEST_LOG_LIMIT = 6;
 
 const refs = {
+  topBanner: document.querySelector(".top-banner"),
   titleScreen: document.getElementById("title-screen"),
   gameScreen: document.getElementById("game-screen"),
   endingScreen: document.getElementById("ending-screen"),
@@ -929,12 +993,16 @@ const refs = {
   battleHero: document.getElementById("battle-hero"),
   battleActions: document.getElementById("battle-actions"),
   battleLog: document.getElementById("battle-log"),
+  dpad: document.getElementById("dpad"),
   endingTitle: document.getElementById("ending-title"),
   endingText: document.getElementById("ending-text"),
   restartButton: document.getElementById("restart-btn"),
 };
 
 const modeButtons = document.querySelectorAll("[data-mode]");
+const dpadMoveButtons = document.querySelectorAll("[data-move]");
+const dpadActionButtons = document.querySelectorAll("[data-action]");
+let lastTouchTime = 0;
 const ctx = refs.canvas.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
@@ -982,9 +1050,51 @@ function init() {
 
   refs.restartButton.addEventListener("click", () => resetToTitle());
   document.addEventListener("keydown", onKeydown);
+  bindDpad();
   renderPanels();
 }
 
+function bindDpad() {
+  const wrapInput = (handler) => (event) => {
+    if (event.type === "touchstart") {
+      lastTouchTime = Date.now();
+    } else if (event.type === "click" && Date.now() - lastTouchTime < 350) {
+      return;
+    }
+    event.preventDefault();
+    handler();
+  };
+
+  dpadMoveButtons.forEach((button) => {
+    const dir = button.dataset.move;
+    const handler = wrapInput(() => handleMoveInput(dir));
+    button.addEventListener("touchstart", handler, { passive: false });
+    button.addEventListener("click", handler);
+  });
+
+  dpadActionButtons.forEach((button) => {
+    const handler = wrapInput(() => handleInteractInput());
+    button.addEventListener("touchstart", handler, { passive: false });
+    button.addEventListener("click", handler);
+  });
+}
+
+function handleMoveInput(dir) {
+  if (dir === "up") return tryMove(0, -1, "up");
+  if (dir === "down") return tryMove(0, 1, "down");
+  if (dir === "left") return tryMove(-1, 0, "left");
+  if (dir === "right") return tryMove(1, 0, "right");
+}
+
+function handleInteractInput() {
+  if (game.dialog) {
+    stepDialog();
+    return;
+  }
+  if (game.phase === "explore") {
+    interact();
+  }
+}
 function startGame(modeKey) {
   const mode = MODES[modeKey] ?? MODES.standard;
   game.phase = "explore";
@@ -2019,6 +2129,22 @@ function renderPanels() {
   refs.titleScreen.classList.toggle("hidden", game.phase !== "title");
   refs.gameScreen.classList.toggle("hidden", game.phase === "title" || game.phase === "ending");
   refs.endingScreen.classList.toggle("hidden", game.phase !== "ending");
+  refs.topBanner.classList.toggle("hidden", game.phase !== "title");
+
+  const showDpad = game.phase === "explore";
+  if (refs.dpad) {
+    refs.dpad.classList.toggle("hidden", !showDpad);
+  }
+
+  const moveDisabled = game.phase !== "explore" || game.dialog || game.battle;
+  dpadMoveButtons.forEach((button) => {
+    button.disabled = moveDisabled;
+  });
+
+  const actionDisabled = game.phase === "title" || game.phase === "ending" || game.battle;
+  dpadActionButtons.forEach((button) => {
+    button.disabled = actionDisabled;
+  });
 
   if (game.phase === "title") {
     refs.dialogPanel.classList.add("hidden");
@@ -2205,6 +2331,14 @@ function clamp(value, min, max) {
     </script>
   </body>
 </html>
+
+
+
+
+
+
+
+
 
 
 
