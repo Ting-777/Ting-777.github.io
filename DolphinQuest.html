@@ -1056,7 +1056,7 @@ const BATTLES = {
     exp: 55,
     gold: 46,
     specialEvery: 2,
-    specialText: "放大器扩散焦虑波。",
+    specialText: "雷军扩散小米爆炸波。",
     specialBoost: 14,
     debuffTurns: 2,
     rewardCharge: 18,
@@ -1931,23 +1931,30 @@ function runHeroAction(actionId) {
   }
 
   if (actionId === "wheel") {
+    const cost = 5;
+    if (hero.charge < cost) {
+      logBattle("充能不够，转李妈妈别。" );
+      return;
+    }
     const roll = Math.random();
     if (roll < 0.25) {
+	  hero.charge -= 5;
       const damage = calcDamage(36, 74, hero.atk + 4, enemy.def);
       enemy.hp = Math.max(0, enemy.hp - damage);
-      hero.charge = clamp(hero.charge + 5, 0, 99);
+      
       logBattle(`Matrix，转盘暴击 ${damage}。`);
     } else if (roll < 0.65) {
+	  hero.charge -= 5;
       const damage = calcDamage(15, 20, hero.atk, enemy.def);
       enemy.hp = Math.max(0, enemy.hp - damage);
-      hero.charge = clamp(hero.charge + 12, 0, 99);
+      
       logBattle(`转盘稳落点，伤害 ${damage}，xbmd。`);
     } else {
-      const heal = 26;
+      const heal = Math.round(hero.maxHp * 0.2);
       hero.hp = clamp(hero.hp + heal, 0, hero.maxHp);
-      hero.guard = clamp(hero.guard + 7, 0, 99);
-      hero.charge = clamp(hero.charge + 5, 0, 99);
-      logBattle(`转盘奶格回血 ${heal}。`);
+      hero.guard = clamp(hero.guard + 5, 0, 99);
+      hero.charge = clamp(hero.charge + 10, 0, 99);
+      logBattle(`转盘奶格回血 ${heal} 回蓝 10。`);
     }
     return;
   }
@@ -1959,9 +1966,9 @@ function runHeroAction(actionId) {
       return;
     }
     hero.charge -= cost;
-    const heal = 38;
+    const heal = Math.round(hero.maxHp * 0.25);
     hero.hp = clamp(hero.hp + heal, 0, hero.maxHp);
-    logBattle(`困告扣蓝回血 ${heal}。`);
+    logBattle(`困告回血 ${heal}。`);
     return;
   }
 
@@ -2675,8 +2682,9 @@ function renderBattlePanel() {
     button.textContent = label;
     button.addEventListener("click", () => runBattleTurn(action.id));
 
-    if (action.id === "edict" && (!game.edictUnlocked || game.hero.charge < 40)) {
-      button.disabled = true;
+
+    if (action.id === "edict" && (!game.edictUnlocked || game.hero.charge < 60)) {
+      button.disabled = true; 
     }
     if (action.id === "vc" && game.bag.vc <= 0) {
       button.disabled = true;
@@ -2686,6 +2694,15 @@ function renderBattlePanel() {
     }
     if (action.id === "tonic" && (game.bag.tonic || 0) <= 0) {
       button.disabled = true;
+    }
+    if (action.id === "sleep" && game.hero.charge < 18) {
+      button.disabled = true; 
+    }
+    if (action.id === "tea" && game.hero.charge < 16) {
+      button.disabled = true; 
+    }
+    if (action.id === "wheel" && game.hero.charge < 5) {
+      button.disabled = true; 
     }
 
     refs.battleActions.appendChild(button);
@@ -2699,6 +2716,7 @@ function renderBattlePanel() {
   }
   refs.battleLog.scrollTop = refs.battleLog.scrollHeight;
 }
+
 
 function setParagraphs(container, lines) {
   container.innerHTML = "";
