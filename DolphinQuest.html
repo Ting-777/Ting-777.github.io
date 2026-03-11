@@ -362,7 +362,13 @@ button:disabled {
             <p id="hero-stats">HP：</p>
             <p id="bag-stats">背包：</p>
             <p id="money-stats">豚币：</p>
-            <button id="sell-gupiao-btn" type="button">卖谷票</button>
+			<button id="sell-gupiao-btn" type="button">卖谷票</button>
+
+			<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin: 6px 0 8px;">
+			  <button id="use-vc-btn" type="button" style="margin: 0;">恰VC(5)</button>
+			  <button id="use-vd-btn" type="button" style="margin: 0;">恰VD(6)</button>
+			  <button id="use-tonic-btn" type="button" style="margin: 0;">回蓝(8)</button>
+			</div>
             <p id="quest-stats">主线：</p>
             <p id="time-stats">时长：</p>
             <h3>探索说明</h3>
@@ -829,7 +835,7 @@ const NPCS = [
       "这别小米迟早倒闭，你别分心。",
     ],
     repeatLines: ["小朋友：别硬撑，按节奏来咯。"],
-    questFlag: null,
+    questFlag: "talk_xiaopengyou",
   },
   {
     id: "ldj",
@@ -1198,6 +1204,10 @@ const refs = {
   endingTitle: document.getElementById("ending-title"),
   endingText: document.getElementById("ending-text"),
   restartButton: document.getElementById("restart-btn"),
+  // 在 refs 对象里加上这三行：
+  useVcBtn: document.getElementById("use-vc-btn"),
+  useVdBtn: document.getElementById("use-vd-btn"),
+  useTonicBtn: document.getElementById("use-tonic-btn"),
 };
 
 const modeButtons = document.querySelectorAll("[data-mode]");
@@ -1262,6 +1272,10 @@ function init() {
   if (refs.sellGupiaoBtn) {
     refs.sellGupiaoBtn.addEventListener("click", () => openSellGupiao());
   }
+  // 在 init() 里面找到 refs.sellGupiaoBtn.addEventListener 这块，在下面加：
+  if (refs.useVcBtn) refs.useVcBtn.addEventListener("click", () => useItemOutBattle("vc"));
+  if (refs.useVdBtn) refs.useVdBtn.addEventListener("click", () => useItemOutBattle("vd"));
+  if (refs.useTonicBtn) refs.useTonicBtn.addEventListener("click", () => useItemOutBattle("tonic"));
   renderPanels();
 }
 
@@ -1407,7 +1421,14 @@ function onKeydown(event) {
   if (game.phase === "battle") {
     const action = BATTLE_ACTIONS.find((item) => item.hotkey === key);
     if (action) {
-      runBattleTurn(action.id);
+      // 增加判断：如果条件满足才推进回合
+      if (canExecuteAction(action.id)) {
+        runBattleTurn(action.id);
+      } else {
+        // 条件不足时，只打日志不推进回合，避免白挨打
+        logBattle("条件不足，按键无效咯。");
+        renderPanels(); 
+      }
       event.preventDefault();
     }
     return;
@@ -1439,7 +1460,22 @@ function onKeydown(event) {
     event.preventDefault();
     return;
   }
-
+// 在 onKeydown 里面，找到 key === "g" 的那块逻辑，在它下面加：
+  if (key === "5") {
+    useItemOutBattle("vc");
+    event.preventDefault();
+    return;
+  }
+  if (key === "6") {
+    useItemOutBattle("vd");
+    event.preventDefault();
+    return;
+  }
+  if (key === "8") {
+    useItemOutBattle("tonic");
+    event.preventDefault();
+    return;
+  }
   if (key === "enter" || key === " ") {
     interact();
     event.preventDefault();
@@ -1736,6 +1772,42 @@ function openShop(shopId) {
   );
 }
 
+// 新增：日常探索状态下的吃药逻辑
+function useItemOutBattle(itemId) {
+  // 如果在战斗中、或者正在看对话，直接拦截
+  if (game.phase !== "explore" || game.dialog || game.battle) return;
+
+  const hero = game.hero;
+  if (itemId === "vc") {
+    if (game.bag.vc <= 0) {
+      openDialog("旁白", ["VC 空了，恰李妈妈别。"]);
+      return;
+    }
+    game.bag.vc -= 1;
+    hero.hp = clamp(hero.hp + 72, 0, hero.maxHp);
+    openDialog("旁白", ["恰vc咯，回血 72。"]);
+  } 
+  else if (itemId === "vd") {
+    if (game.bag.vd <= 0) {
+      openDialog("旁白", ["VD 空了，恰李妈妈别。"]);
+      return;
+    }
+    game.bag.vd -= 1;
+    hero.hp = clamp(hero.hp + 48, 0, hero.maxHp);
+    hero.overtime = 0; // 日常解毒
+    openDialog("旁白", ["恰vd咯，回血 48，余毒清空。"]);
+  } 
+  else if (itemId === "tonic") {
+    if ((game.bag.tonic || 0) <= 0) {
+      openDialog("旁白", ["转盘酊没了，李妈妈别。"]);
+      return;
+    }
+    game.bag.tonic -= 1;
+    hero.charge = clamp(hero.charge + 32, 0, 99);
+    openDialog("旁白", ["一口转盘酊，回蓝 32。"]);
+  }
+}
+
 function openSellGupiao() {
   if (game.phase !== "explore" || game.dialog || game.battle) {
     return;
@@ -1953,8 +2025,8 @@ function runHeroAction(actionId) {
       const heal = Math.round(hero.maxHp * 0.2);
       hero.hp = clamp(hero.hp + heal, 0, hero.maxHp);
       hero.guard = clamp(hero.guard + 5, 0, 99);
-      hero.charge = clamp(hero.charge + 10, 0, 99);
-      logBattle(`转盘奶格回血 ${heal} 回蓝 10。`);
+      hero.charge = clamp(hero.charge + 20, 0, 99);
+      logBattle(`转盘奶格回血 ${heal} 回蓝 20。`);
     }
     return;
   }
@@ -2588,7 +2660,10 @@ function renderPanels() {
   if (refs.sellGupiaoBtn) {
     refs.sellGupiaoBtn.disabled = moveDisabled;
   }
-
+  // 在下面加上：
+  if (refs.useVcBtn) refs.useVcBtn.disabled = moveDisabled || game.bag.vc <= 0;
+  if (refs.useVdBtn) refs.useVdBtn.disabled = moveDisabled || game.bag.vd <= 0;
+  if (refs.useTonicBtn) refs.useTonicBtn.disabled = moveDisabled || (game.bag.tonic || 0) <= 0;
   if (game.phase === "title") {
     refs.dialogPanel.classList.add("hidden");
     refs.battlePanel.classList.add("hidden");
@@ -2682,27 +2757,8 @@ function renderBattlePanel() {
     button.textContent = label;
     button.addEventListener("click", () => runBattleTurn(action.id));
 
-
-    if (action.id === "edict" && (!game.edictUnlocked || game.hero.charge < 60)) {
-      button.disabled = true; 
-    }
-    if (action.id === "vc" && game.bag.vc <= 0) {
+    if (!canExecuteAction(action.id)) {
       button.disabled = true;
-    }
-    if (action.id === "vd" && game.bag.vd <= 0) {
-      button.disabled = true;
-    }
-    if (action.id === "tonic" && (game.bag.tonic || 0) <= 0) {
-      button.disabled = true;
-    }
-    if (action.id === "sleep" && game.hero.charge < 18) {
-      button.disabled = true; 
-    }
-    if (action.id === "tea" && game.hero.charge < 16) {
-      button.disabled = true; 
-    }
-    if (action.id === "wheel" && game.hero.charge < 5) {
-      button.disabled = true; 
     }
 
     refs.battleActions.appendChild(button);
@@ -2774,6 +2830,20 @@ function getFacingTile() {
   y = clamp(y, 0, map.height - 1);
 
   return { x, y };
+}
+
+// 新增：判断该行动是否满足释放条件
+function canExecuteAction(actionId) {
+  const hero = game.hero;
+  if (actionId === "edict" && (!game.edictUnlocked || hero.charge < 60)) return false;
+  if (actionId === "vc" && game.bag.vc <= 0) return false;
+  if (actionId === "vd" && game.bag.vd <= 0) return false;
+  if (actionId === "tonic" && (game.bag.tonic || 0) <= 0) return false;
+  if (actionId === "sleep" && hero.charge < 18) return false;
+  if (actionId === "tea" && hero.charge < 16) return false;
+  if (actionId === "wheel" && hero.charge < 10) return false;
+  
+  return true; // 条件都满足，准许释放
 }
 
 function calcDamage(min, max, attacker, defender) {
